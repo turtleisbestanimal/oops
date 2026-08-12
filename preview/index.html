@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/colors.css">
+<link rel="stylesheet" href="_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/typography.css">
+<link rel="stylesheet" href="_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/radii.css">
+<link rel="stylesheet" href="_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/elevation.css">
+<link rel="stylesheet" href="_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/layout.css">
+<link rel="stylesheet" href="_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/base.css">
+<link rel="stylesheet" href="_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/styles.css">
+<script src="_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: #FFFFFF; }
+  a { color: #2A86FA; text-decoration: none; }
+  a:hover { color: #2A86FA; text-decoration: underline; }
+  @keyframes oops-wipe { from { width: 0 } to { width: calc(100% + 12px) } }
+  @keyframes oops-pulse { 0% { box-shadow: 0 0 0 0 rgba(41,164,255,0.35) } 70% { box-shadow: 0 0 0 7px rgba(41,164,255,0) } 100% { box-shadow: 0 0 0 0 rgba(41,164,255,0) } }
+  @keyframes oops-toast { 0% { opacity: 0; transform: translate(-50%, -18px) scale(0.96) } 55% { opacity: 1; transform: translate(-50%, 5px) scale(1.02) } 100% { opacity: 1; transform: translate(-50%, 0) scale(1) } }
+</style>
+</helmet>
+
+<div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #111111; -webkit-font-smoothing: antialiased; min-height: 100vh; min-width: 1440px; display: flex; flex-direction: column">
+
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ toastStyle }}">
+      <span style="{{ toastIconStyle }}">
+        <svg width="12" height="9" viewBox="0 0 12 9"><path d="M1 4.6 L4.3 8 L11 1.2" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </span>
+      <span style="font-size: 15px; line-height: 24px; font-weight: 500; white-space: nowrap">{{ toastText }}</span>
+      <span style="font-size: 13px; line-height: 24px; color: #757575; white-space: nowrap">{{ toastSub }}</span>
+    </div>
+  </sc-if>
+
+  <header style="position: sticky; top: 0; z-index: 20; background: #FFFFFF; box-shadow: inset 0 -1px 0 0 #E5E5E5; flex-shrink: 0">
+    <div style="max-width: 1440px; margin: 0 auto; padding: 0 48px; height: 60px; display: flex; align-items: center; box-sizing: border-box">
+      <div onClick="{{ goLanding }}" style="display: flex; align-items: center; color: #2A86FA; cursor: pointer; transition: opacity 120ms linear" style-hover="opacity: 0.75"><svg width="76" height="27" viewBox="2 7 71.5 26.5" role="img" aria-label="OoPs!?"><path d="M16.59 8.78L3.81 8.78L3 11.19L9.78 11.19Q6.06 13.22 4.13 17L4.13 17Q2.38 20.44 2.38 24.72L2.38 24.72Q2.38 27.88 4.44 30.22L4.44 30.22Q6.63 32.66 9.91 32.66L9.91 32.66Q12.44 32.66 14.69 31.28L14.69 31.28Q16.75 30.03 18.34 27.78L18.34 27.78Q19.88 25.66 20.72 23.03L20.72 23.03Q21.56 20.41 21.56 17.91L21.56 17.91Q21.56 15.13 20 13.41L20 13.41Q18.41 11.63 15.66 11.34L15.66 11.34L14.81 13.56Q16.97 13.88 17.88 15L17.88 15Q18.81 16.09 18.81 18.34L18.81 18.34Q18.81 20.53 17.97 22.75L17.97 22.75Q17.19 24.84 15.84 26.59L15.84 26.59Q14.53 28.31 12.97 29.31L12.97 29.31Q11.41 30.34 10 30.34L10 30.34Q7.81 30.34 6.41 28.56L6.41 28.56Q4.97 26.78 4.97 24.06L4.97 24.06Q4.97 19.41 7.75 15.59L7.75 15.59Q10.81 11.38 15.69 10.88L15.69 10.88L16.59 8.78Z M31.94 16.13L32.78 14.44L21.47 14.44L20.34 16.78L24.94 16.78Q22.56 18.09 21.09 20.31L21.09 20.31Q19.41 22.84 19.41 25.91L19.41 25.91Q19.41 28.69 21.38 30.63L21.38 30.63Q23.41 32.66 26.44 32.66L26.44 32.66Q30.34 32.66 33.03 30.16L33.03 30.16Q35.91 27.47 35.91 23L35.91 23Q35.91 20.16 34.38 18.59L34.38 18.59Q32.91 17.06 30.09 16.78L30.09 16.78L29.63 19.16Q31.66 19.47 32.38 20.28L32.38 20.28Q33.06 21.06 33.06 23L33.06 23Q33.06 25.97 31.53 27.97L31.53 27.97Q29.75 30.31 26.47 30.31L26.47 30.31Q24.91 30.31 23.53 29.25L23.53 29.25Q21.94 28.03 21.94 26.25L21.94 26.25Q21.94 22.72 24.03 20.06L24.03 20.06Q26.66 16.75 31.94 16.13L31.94 16.13Z M37.53 8.81L34.88 8.81L34.88 32.16L37.53 32.16L37.53 16.88Q37.53 14.50 39.16 12.66L39.16 12.66Q40.94 10.69 43.72 10.69L43.72 10.69Q45.34 10.69 46.38 12.16L46.38 12.16Q47.38 13.59 47.38 15.88L47.38 15.88Q47.38 18.91 45.75 20.28L45.75 20.28Q43.97 21.84 39.69 21.88L39.69 21.88L39.03 24.28Q44.56 24.47 47.41 22.28L47.41 22.28Q50.22 20.09 50.22 15.72L50.22 15.72Q50.22 11.84 48.19 9.97L48.19 9.97Q46.47 8.34 43.50 8.34L43.50 8.34Q41.78 8.34 40.13 9.25L40.13 9.25Q38.63 10.09 37.53 11.50L37.53 11.50L37.53 8.81Z M59 17.53L59.75 15.16Q59.28 14.78 58.38 14.56L58.38 14.56Q57.50 14.38 56.63 14.38L56.63 14.38Q53.47 14.38 51.34 15.94L51.34 15.94Q49.34 17.44 49.34 19.50L49.34 19.50Q49.34 21.31 50.81 22.50L50.81 22.50Q51.69 23.19 54 24.13L54 24.13Q55.91 24.91 56.63 25.44L56.63 25.44Q57.78 26.28 57.78 27.53L57.78 27.53Q57.78 29.03 56 29.75L56 29.75Q54.53 30.38 51.97 30.38L51.97 30.38Q50.81 30.38 49.56 30L49.56 30Q48.78 29.75 48.03 29.41L48.03 29.41L47.22 31.94Q48.56 32.31 49.81 32.53L49.81 32.53Q51.09 32.75 51.97 32.75L51.97 32.75Q55.84 32.75 58.19 31.22L58.19 31.22Q60.44 29.78 60.44 27.66L60.44 27.66Q60.44 25.47 58.78 24.09L58.78 24.09Q57.81 23.28 55.38 22.28L55.38 22.28Q53.66 21.56 53.03 21.13L53.03 21.13Q52.03 20.41 52.03 19.44L52.03 19.44Q52.03 18 53.28 17.34L53.28 17.34Q54.34 16.81 56.41 16.81L56.41 16.81Q57 16.81 57.75 17.03L57.75 17.03Q58.44 17.22 59 17.53L59 17.53Z M63.28 26.22L60.44 26.22L60.44 32.25L63.28 32.25L63.28 26.22ZM63.28 8.25L60.44 8.25L60.44 25.28L63.28 25.28L63.28 8.25Z M68.34 26.22L65.56 26.22L65.56 32.19L68.34 32.19L68.34 26.22ZM67.56 7.03L65.75 9.09Q67.97 10.69 69.16 12.31L69.16 12.31Q70.31 13.88 70.31 15.22L70.31 15.22Q70.31 16.13 69.75 17L69.75 17Q69.41 17.53 68.44 18.56L68.44 18.56Q67.06 20.06 66.50 21.13L66.50 21.13Q65.56 22.91 65.56 25.25L65.56 25.25L68.31 25.25Q68.31 23.31 69.16 21.78L69.16 21.78Q69.69 20.88 71 19.47L71 19.47Q72.06 18.31 72.47 17.69L72.47 17.69Q73.13 16.63 73.13 15.44L73.13 15.44Q73.13 13.53 71.75 11.38L71.75 11.38Q70.28 9.09 67.56 7.03L67.56 7.03Z" fill="currentColor"></path></svg></div>
+      <nav style="margin-left: auto; display: flex; gap: 24px; font-size: 15px; line-height: 24px; font-weight: 500">
+        <span onClick="{{ goAll }}" style="{{ navAll }}" style-hover="opacity: 1">전체 보기</span>
+        <span onClick="{{ goUpload }}" style="{{ navUpload }}" style-hover="opacity: 1">업로드</span>
+        <span onClick="{{ goReport }}" style="{{ navReport }}" style-hover="opacity: 1">검수 리포트</span>
+        <span onClick="{{ goHistory }}" style="{{ navHistory }}" style-hover="opacity: 1">검수 이력</span>
+        <span onClick="{{ goSettings }}" style="{{ navSettings }}" style-hover="opacity: 1">설정</span>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ───────── S-1 랜딩 ───────── -->
+  <sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+  <div style="{{ labelStyle }}">S-1 · 랜딩</div>
+  <main style="flex-shrink: 0">
+
+    <section style="position: relative; height: 682px; overflow: hidden">
+      <div style="position: absolute; top: 0; right: 0; width: 326px; height: 682px; background: #4BB1FD; overflow: hidden">
+        <div style="position: absolute; left: -7px; top: 300px; font-size: 128px; line-height: 128px; font-weight: 700; color: #FFFFFF; white-space: nowrap">Oo</div>
+        <div style="position: absolute; left: 179px; top: 375px; font-size: 128px; line-height: 128px; font-weight: 700; color: #FFFFFF; white-space: nowrap">Ps</div>
+      </div>
+
+      <div style="position: relative; max-width: 1440px; margin: 0 auto; padding: 120px 96px 0; box-sizing: border-box">
+        <div style="display: flex; align-items: center; gap: 24px; width: 620px">
+          <span style="font-size: 22px; line-height: 20px; font-weight: 500; white-space: nowrap; flex-shrink: 0">업로드 전 검수</span>
+          <div style="position: relative; flex: 1; height: 8px">
+            <div style="position: absolute; left: 0; right: 0; top: 3.5px; height: 1px; background: rgba(0,0,0,0.5)"></div>
+            <div style="position: absolute; left: 18%; top: 0; width: 8px; height: 8px; background: #9E3500"></div>
+            <div style="position: absolute; left: 44%; top: 0; width: 8px; height: 8px; background: #9E3500"></div>
+            <div style="position: absolute; left: 72%; top: 0; width: 8px; height: 8px; background: #111111"></div>
+          </div>
+        </div>
+
+        <h1 style="margin: 32px 0 0; font-size: 56px; line-height: 66px; font-weight: 500; width: 972px">편집이 끝난 영상 한 편에서,<br><span style="position: relative; display: inline-block; vertical-align: top; white-space: nowrap"><span>업로드 전에 다시 확인할 구간만</span><span aria-hidden="true" style="position: absolute; left: -6px; top: 0; width: 0; padding: 0 6px; overflow: hidden; white-space: nowrap; line-height: 66px; color: #FFFFFF; background: #29A4FF; border-radius: 10px; animation: oops-wipe 1.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both">업로드 전에 다시 확인할 구간만</span></span> 찾습니다.</h1>
+        <p style="margin: 24px 0 0; font-size: 16px; line-height: 28px; font-weight: 300; color: #757575; width: 645px; text-wrap: pretty">발언과 화면 자막, 화면 속 삽입 이미지를 분석해 검토가 필요한 지점을 타임라인으로 제시합니다. 판정하지 않고, 고치지도 않습니다. 최종 판단은 제작자가 합니다.</p>
+
+        <div style="display: flex; align-items: flex-start; gap: 72px; margin-top: 46px">
+          <div style="display: flex; align-items: center; gap: 12px; width: 378px; height: 74px; padding: 0 18px 0 22px; box-sizing: border-box; border-radius: 10px; box-shadow: inset 0 0 0 1px #000000; flex-shrink: 0; transition: box-shadow 120ms linear" style-hover="box-shadow: inset 0 0 0 1px #29A4FF">
+            <input type="email" value="{{ emailA }}" onChange="{{ setEmailA }}" onKeyDown="{{ keyA }}" placeholder="이메일 입력 칸" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: inherit; font-size: 15px; line-height: 24px; font-weight: 500; color: #111111">
+            <span onClick="{{ submitA }}" title="보내기" style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 100px; cursor: pointer; flex-shrink: 0; transition: background-color 120ms linear" style-hover="background: #EDF7FF">
+              <svg width="19" height="16" viewBox="0 0 19 16"><path d="M 0 16 L 0 10 L 8 8 L 0 6 L 0 0 L 19 8 L 0 16 Z" fill="#000000"></path></svg>
+            </span>
+          </div>
+
+          <div style="width: 504px; opacity: 0.6; flex-shrink: 0">
+            <sc-for list="{{ heroSteps }}" as="s" hint-placeholder-count="5">
+              <div style="display: grid; grid-template-columns: 16px 1fr auto; gap: 14px; align-items: center; height: 42px; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+                <div style="{{ s.dotStyle }}"></div>
+                <div style="{{ s.labelStyle }}">{{ s.label }}</div>
+                <div style="font-size: 11px; line-height: 20px; color: #757575; white-space: nowrap">{{ s.state }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="background: #EDF7FF">
+      <div style="max-width: 1440px; margin: 0 auto; padding: 96px 96px; box-sizing: border-box">
+        <h2 style="margin: 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">혼자 만든 영상은 혼자 볼 수 없습니다</h2>
+        <p style="margin: 24px 0 0; font-size: 16px; line-height: 28px; color: #757575; width: 843px; text-wrap: pretty">말한 사람, 자른 사람, 자막을 단 사람이 같은 사람입니다. 제작자의 눈에는 의도가 계속 보이지만 시청자는 결과물만 봅니다. 주의력의 문제가 아니라 구조적인 사각지대입니다.</p>
+      </div>
+    </section>
+
+    <section style="max-width: 1440px; margin: 0 auto; padding: 96px 96px; box-sizing: border-box">
+      <h2 style="margin: 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">OoPs!?는 세 가지를 봅니다</h2>
+      <div style="display: grid; grid-template-columns: repeat(3, 384px); gap: 48px; margin-top: 56px">
+        <div style="box-shadow: inset 0 1px 0 0 #111111; padding-top: 24px">
+          <div style="font-size: 15px; line-height: 24px; font-weight: 500">발언</div>
+          <p style="margin: 12px 0 0; font-size: 14px; line-height: 28px; color: #757575; text-align: justify">타임스탬프가 붙은 대본을 만들고, 앞뒤 맥락과 함께 검토 후보를 찾습니다. 문장 단위로 잘라 판단하지 않습니다.</p>
+        </div>
+        <div style="box-shadow: inset 0 1px 0 0 #111111; padding-top: 24px">
+          <div style="font-size: 15px; line-height: 24px; font-weight: 500">화면 자막</div>
+          <p style="margin: 12px 0 0; font-size: 14px; line-height: 28px; color: #757575; text-align: justify">화면 변화가 감지된 시점에서 제작자가 넣은 자막을 추출합니다. 같은 자막이 이어지면 하나로 묶습니다.</p>
+        </div>
+        <div style="box-shadow: inset 0 1px 0 0 #111111; padding-top: 24px">
+          <div style="font-size: 15px; line-height: 24px; font-weight: 500">화면 속 상징</div>
+          <p style="margin: 12px 0 0; font-size: 14px; line-height: 28px; color: #757575; text-align: justify">등록된 참조 이미지와 형태가 유사한 프레임을 표시합니다. 의미는 서비스가 만들어내지 않습니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width: 1440px; margin: 0 auto; padding: 0 96px 96px; box-sizing: border-box">
+      <div style="box-shadow: inset 0 1px 0 0 #E5E5E5; padding-top: 56px; display: grid; grid-template-columns: 480px 672px; justify-content: space-between; align-items: start">
+        <div>
+          <div style="display: flex; align-items: center; gap: 17px">
+            <span style="font-size: 16px; line-height: 20px; color: #9E3500; white-space: nowrap">핵심은 이것입니다</span>
+            <div style="flex: 1; height: 1px; background: #9E3500"></div>
+          </div>
+          <h2 style="margin: 20px 0 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">발언과 자막을 나란히 놓고 봅니다</h2>
+          <p style="margin: 20px 0 0; font-size: 16px; line-height: 28px; color: #757575; width: 457px; text-align: justify">1인 편집 환경에서는 자막이 발언보다 세지는 일이 자주 일어납니다. 판정 근거가 화면에 전부 보이기 때문에, 검출이 틀렸더라도 제작자가 바로 판단할 수 있습니다.</p>
+        </div>
+        <div style="background: #F6F4F4; border-radius: 10px; padding: 48px; box-sizing: border-box; height: 256px">
+          <div style="display: grid; grid-template-columns: 88px 1fr; gap: 20px 0; font-size: 15px; line-height: 28px">
+            <div style="color: #757575">실제 발언</div>
+            <div>“조금 아쉬웠습니다.”</div>
+            <div style="color: #757575">화면 자막</div>
+            <div style="font-weight: 500">“역대 최악의 선택”</div>
+          </div>
+          <p style="margin: 28px 0 0; padding: 28px 0 0 8px; box-shadow: inset 0 1px 0 0 #E5E5E5; font-size: 14px; line-height: 28px; color: #757575">실제 발언보다 화면 자막의 비판 강도가 높아, 출연자의 입장이 더 공격적으로 전달될 수 있습니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="background: #EDF7FF">
+      <div style="max-width: 1440px; margin: 0 auto; padding: 96px 96px; box-sizing: border-box; display: grid; grid-template-columns: 480px 672px; justify-content: space-between; align-items: start">
+        <div>
+          <h2 style="margin: 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">OoPs!?가 하지 않는 것</h2>
+          <p style="margin: 20px 0 0; font-size: 15px; line-height: 28px; color: #757575; width: 365px">판정할 수 없는 것은 판정하지 않습니다.<br>확실하지 않은 검출을 늘리는 대신 줄이는 쪽을 택했습니다.</p>
+        </div>
+        <div style="display: flex; flex-direction: column">
+          <div style="display: grid; grid-template-columns: 272px 1fr; height: 68px; align-items: center; box-shadow: inset 0 -1px 0 0 #E5E5E5; font-size: 15px; line-height: 28px">
+            <div style="font-weight: 500">손·포즈·제스처 분석</div>
+            <div style="color: #757575">랜드마크 유사도만으로는 의미를 판정할 수 없습니다.</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 272px 1fr; height: 68px; align-items: center; box-shadow: inset 0 -1px 0 0 #E5E5E5; font-size: 15px; line-height: 28px">
+            <div style="font-weight: 500">댓글 기반 외부 맥락</div>
+            <div style="color: #757575">다른 영상의 댓글은 이 영상의 예측이 아닙니다.</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 272px 1fr; height: 68px; align-items: center; box-shadow: inset 0 -1px 0 0 #E5E5E5; font-size: 15px; line-height: 28px">
+            <div style="font-weight: 500">법률 판정</div>
+            <div style="color: #757575">위법 여부와 정치 성향을 판단하지 않습니다.</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 272px 1fr; height: 68px; align-items: center; box-shadow: inset 0 -1px 0 0 #E5E5E5; font-size: 15px; line-height: 28px">
+            <div style="font-weight: 500">자동 편집·수정</div>
+            <div style="color: #757575">영상을 대신 고치지 않습니다.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width: 1440px; margin: 0 auto; padding: 96px 96px 0; box-sizing: border-box">
+      <h2 style="margin: 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">모든 검출에 근거 수준을 붙입니다</h2>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #E5E5E5; margin-top: 40px">
+        <div style="background: #FFFFFF; padding: 32px 32px 32px 0">
+          <div style="font-size: 16px; line-height: 24px; font-weight: 500">직접 근거</div>
+          <p style="margin: 10px 0 0; font-size: 15px; line-height: 28px; color: #757575">화면과 음성에서 직접 확인할 수 있습니다.</p>
+        </div>
+        <div style="background: #FFFFFF; padding: 32px">
+          <div style="font-size: 16px; line-height: 24px; font-weight: 500">유사 사례</div>
+          <p style="margin: 10px 0 0; font-size: 15px; line-height: 28px; color: #757575">참조 자료와의 유사성에 기반합니다.</p>
+        </div>
+        <div style="background: #FFFFFF; padding: 32px 0 32px 32px">
+          <div style="font-size: 16px; line-height: 24px; font-weight: 500">맥락 추정</div>
+          <p style="margin: 10px 0 0; font-size: 15px; line-height: 28px; color: #757575">해석에 기반하며 확실성이 가장 낮습니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width: 1440px; margin: 0 auto; padding: 96px 96px 120px; box-sizing: border-box">
+      <div style="box-shadow: inset 0 1px 0 0 #111111; padding-top: 56px; display: flex; align-items: flex-end; justify-content: space-between; gap: 48px">
+        <div>
+          <h2 style="margin: 0; font-size: 40px; line-height: 52px; font-weight: 500; white-space: nowrap">한 편으로 확인해 보세요</h2>
+          <p style="margin: 20px 0 0; font-size: 16px; line-height: 28px; color: #757575">원본 영상은 분석 완료 후 24시간 안에 자동 삭제되며, 모델 학습에 사용하지 않습니다.</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; width: 378px; height: 74px; padding: 0 18px 0 22px; box-sizing: border-box; border-radius: 10px; box-shadow: inset 0 0 0 1px #000000; flex-shrink: 0; transition: box-shadow 120ms linear" style-hover="box-shadow: inset 0 0 0 1px #29A4FF">
+          <input type="email" value="{{ emailB }}" onChange="{{ setEmailB }}" onKeyDown="{{ keyB }}" placeholder="이메일 입력 칸" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: inherit; font-size: 15px; line-height: 24px; font-weight: 500; color: #111111">
+          <span onClick="{{ submitB }}" title="보내기" style="display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 100px; cursor: pointer; flex-shrink: 0; transition: background-color 120ms linear" style-hover="background: #EDF7FF">
+            <svg width="19" height="16" viewBox="0 0 19 16"><path d="M 0 16 L 0 10 L 8 8 L 0 6 L 0 0 L 19 8 L 0 16 Z" fill="#000000"></path></svg>
+          </span>
+        </div>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <!-- ───────── S-2 업로드 ───────── -->
+  <sc-if value="{{ isUpload }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ labelStyle }}">S-2 · 업로드</div>
+  <main style="max-width: 1440px; margin: 0 auto; padding: 80px 96px 120px; width: 100%; box-sizing: border-box; flex-shrink: 0">
+    <div style="display: grid; grid-template-columns: 801.328px 350.672px; gap: 96px; align-items: start">
+      <div>
+        <h1 style="margin: 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">영상 업로드</h1>
+        <p style="margin: 16px 0 48px; font-size: 15px; line-height: 28px; color: #757575">편집이 끝난 완성본 한 편을 올려 주세요. mp4 또는 mov, 최대 10분 · 2GB.</p>
+
+        <div onClick="{{ pickFile }}" onMouseEnter="{{ zoneEnter }}" onMouseLeave="{{ zoneLeave }}" onDragOver="{{ zoneDragOver }}" onDragLeave="{{ zoneDragLeave }}" onDrop="{{ zoneDrop }}" style="{{ dropStyle }}">
+          <div style="position: absolute; inset: 0; pointer-events: none; background-color: #F7FBFF; background-image: linear-gradient(#FFFFFF 1px, transparent 1px), linear-gradient(90deg, #FFFFFF 1px, transparent 1px); background-size: 40px 40px; -webkit-mask-image: radial-gradient(ellipse at center, #000000 20%, transparent 72%); mask-image: radial-gradient(ellipse at center, #000000 20%, transparent 72%)"></div>
+
+          <input type="file" accept="video/mp4,video/quicktime" ref="{{ inputRef }}" onChange="{{ inputChange }}" style="display: none">
+
+          <div style="position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center">
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">파일을 이 영역으로 끌어다 놓으세요</div>
+            <div style="margin-top: 8px; font-size: 12px; line-height: 20px; color: #757575">또는 눌러서 파일 선택 · 업로드 중 중단하고 다시 이어서 올릴 수 있습니다</div>
+
+            <div style="position: relative; width: 100%; max-width: 560px; margin-top: 32px; display: flex; flex-direction: column; align-items: center">
+              <sc-if value="{{ noFile }}" hint-placeholder-val="{{ true }}">
+                <div style="position: relative; width: 128px; height: 128px">
+                  <div style="{{ ghostStyle }}"></div>
+                  <div style="{{ tileStyle }}">
+                    <svg width="20" height="20" viewBox="0 0 14 14">
+                      <path d="M 6.5 10.577 L 6.5 1.927 L 4.17 4.257 L 3.462 3.539 L 7 0 L 10.539 3.539 L 9.831 4.258 L 7.5 1.927 L 7.5 10.577 L 6.5 10.577 Z M 0 14 L 0 9.962 L 1 9.962 L 1 13 L 13 13 L 13 9.962 L 14 9.962 L 14 14 L 0 14 Z" fill="#29A4FF"></path>
+                    </svg>
+                    <sc-if value="{{ dragActive }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top: 8px; font-size: 12px; line-height: 18px; font-weight: 500; color: #29A4FF">놓으세요</div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ hasFile }}" hint-placeholder-val="{{ false }}">
+                <sc-for list="{{ pickedFiles }}" as="pf" hint-placeholder-count="1">
+                  <div style="width: 100%; border-radius: 10px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(17,17,17,0.08); padding: 16px 18px; text-align: left">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px">
+                      <div style="font-size: 15px; line-height: 24px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ pf.name }}</div>
+                      <div style="font-size: 12px; line-height: 20px; color: #757575; white-space: nowrap; flex-shrink: 0; padding: 2px 10px; border-radius: 100px; background: #EDF7FF">{{ pf.size }}</div>
+                    </div>
+                    <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 12px; line-height: 20px; color: #757575">
+                      <span style="padding: 1px 8px; border-radius: 4px; background: #F2F2F2; white-space: nowrap">{{ pf.type }}</span>
+                      <span style="white-space: nowrap">수정 {{ pf.modified }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+                <div style="margin-top: 12px; font-size: 12px; line-height: 20px; color: #757575">다시 선택하려면 이 영역을 누르세요</div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 376.664px 376.664px; justify-content: space-between; margin-top: 56px">
+          <label style="display: block">
+            <span style="display: block; font-size: 12px; line-height: 20px; font-weight: 500; color: #757575; margin-bottom: 10px">영상 제목 (선택)</span>
+            <input type="text" placeholder="과거에 실수로 3번이나 음주 운전 했다는 임성근 셰프" style="width: 100%; box-sizing: border-box; border: none; outline: none; background: transparent; box-shadow: inset 0 -1px 0 0 #E5E5E5; padding: 8px 0; font-family: inherit; font-size: 15px; line-height: 24px; color: #111111; transition: box-shadow 120ms linear" style-focus="box-shadow: inset 0 -1px 0 0 #29A4FF">
+          </label>
+          <label style="display: block">
+            <span style="display: block; font-size: 12px; line-height: 20px; font-weight: 500; color: #757575; margin-bottom: 10px">채널 URL (선택)</span>
+            <input type="text" placeholder="youtube.com/@channel" style="width: 100%; box-sizing: border-box; border: none; outline: none; background: transparent; box-shadow: inset 0 -1px 0 0 #E5E5E5; padding: 8px 0; font-family: inherit; font-size: 15px; line-height: 24px; color: #111111; transition: box-shadow 120ms linear" style-focus="box-shadow: inset 0 -1px 0 0 #29A4FF">
+          </label>
+        </div>
+
+        <div style="margin-top: 64px; display: flex; align-items: center; justify-content: space-between; gap: 48px">
+          <p style="margin: 0; font-size: 12px; line-height: 20px; color: #757575">업로드가 끝나면 분석이 곧바로 시작됩니다. 10분 영상 기준 5분 이내에 리포트가 나옵니다.</p>
+          <div onClick="{{ startAnalysis }}" style="{{ startStyle }}" style-hover="box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #29A4FF">분석 시작</div>
+        </div>
+      </div>
+
+      <aside style="box-shadow: inset 1px 0 0 0 #E5E5E5; padding-left: 40px">
+        <h2 style="margin: 0 0 8px; font-size: 15px; line-height: 24px; font-weight: 500">데이터 보관 정책</h2>
+        <p style="margin: 0 0 28px; font-size: 12px; line-height: 20px; color: #757575">편집 완료본은 채널의 가장 민감한 자산입니다.</p>
+        <div style="display: flex; flex-direction: column">
+          <div style="padding: 16px 0; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">원본 영상</div>
+            <div style="margin-top: 4px; font-size: 12px; line-height: 20px; color: #757575">분석 완료 후 24시간 내 자동 삭제</div>
+          </div>
+          <div style="padding: 16px 0; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">모델 학습</div>
+            <div style="margin-top: 4px; font-size: 12px; line-height: 20px; color: #757575">사용하지 않습니다</div>
+          </div>
+          <div style="padding: 16px 0; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">리포트</div>
+            <div style="margin-top: 4px; font-size: 12px; line-height: 20px; color: #757575">텍스트 결과와 대표 프레임만 보관, 언제든 삭제 가능</div>
+          </div>
+          <div style="padding: 16px 0">
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">전송</div>
+            <div style="margin-top: 4px; font-size: 12px; line-height: 20px; color: #757575">전 구간 암호화</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ───────── S-3 분석 중 ───────── -->
+  <sc-if value="{{ isAnalyzing }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ labelStyle }}">S-3 · 분석 중</div>
+  <main style="position: relative; overflow: hidden; flex-shrink: 0">
+    <div style="position: absolute; top: 0; right: 56px; width: 326px; height: 100%; background: #4BB1FD; overflow: hidden">
+      <div style="position: absolute; left: -7px; top: 380px; font-size: 128px; line-height: 128px; font-weight: 700; color: #FFFFFF; white-space: nowrap">Oo</div>
+      <div style="position: absolute; left: 179px; top: 472px; font-size: 128px; line-height: 128px; font-weight: 700; color: #FFFFFF; white-space: nowrap">Ps</div>
+    </div>
+    <div style="position: relative; max-width: 1440px; margin: 0 auto; padding: 70px 96px 120px; width: 100%; box-sizing: border-box">
+      <div style="width: 720px">
+        <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">{{ fileName }}</div>
+        <h1 style="margin: 12px 0 0; font-size: 40px; line-height: 52px; font-weight: 500">분석 중입니다</h1>
+        <p style="margin: 16px 0 0; font-size: 15px; line-height: 28px; color: #757575">남은 시간 약 {{ etaLabel }}. 음성 분석과 화면 분석은 따로 진행됩니다.</p>
+
+        <div style="margin-top: 56px; height: 2px; background: #E5E5E5; overflow: hidden">
+          <div style="{{ barStyle }}"></div>
+        </div>
+
+        <div style="margin-top: 48px; display: flex; flex-direction: column">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+            <div style="display: grid; grid-template-columns: 20px 1fr auto; gap: 20px; align-items: center; height: 60px; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+              <div style="{{ s.dotStyle }}"></div>
+              <div style="{{ s.labelStyle }}">{{ s.label }}</div>
+              <div style="font-size: 12px; line-height: 20px; color: #757575; white-space: nowrap">{{ s.state }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ───────── S-4 검수 리포트 ───────── -->
+  <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ labelStyle }}">S-4 · 검수 리포트</div>
+  <main style="max-width: 1440px; margin: 0 auto; padding: 56px 96px 96px; width: 100%; box-sizing: border-box; flex-shrink: 0">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 48px; flex-shrink: 0">
+      <div>
+        <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">검수 리포트 · 2026-08-11</div>
+        <h1 style="margin: 10px 0 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px; white-space: nowrap">{{ fileName }}</h1>
+      </div>
+      <div style="display: flex; gap: 48px; font-size: 15px; line-height: 24px; flex-shrink: 0">
+        <div style="flex-shrink: 0">
+          <div style="color: #757575; font-size: 12px; line-height: 20px; white-space: nowrap">검토 지점</div>
+          <div style="margin-top: 4px; font-weight: 500; white-space: nowrap">{{ total }}건</div>
+        </div>
+        <div style="flex-shrink: 0">
+          <div style="color: #757575; font-size: 12px; line-height: 20px; white-space: nowrap">결정 완료</div>
+          <div style="margin-top: 4px; font-weight: 500; white-space: nowrap">{{ decided }}건</div>
+        </div>
+        <div style="flex-shrink: 0">
+          <div style="color: #757575; font-size: 12px; line-height: 20px; white-space: nowrap">영상 길이</div>
+          <div style="margin-top: 4px; font-weight: 500; white-space: nowrap">09:41</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 60px; position: relative">
+      <div style="position: relative; height: 56px; border-radius: 10px; background: #DEF1FF">
+        <sc-for list="{{ findings }}" as="f" hint-placeholder-count="5">
+          <div onClick="{{ f.select }}" style="{{ f.markerStyle }}" style-hover="opacity: 0.6" title="{{ f.time }}">
+            <div style="{{ f.markerBarStyle }}"></div>
+            <div style="{{ f.markerTimeStyle }}">{{ f.time }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; line-height: 20px; color: #757575">
+        <span>00:00</span><span>09:41</span>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 24px; font-size: 12px; line-height: 20px; color: #757575; align-items: center; margin-top: 8px">
+      <span style="display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0"><span style="width: 8px; height: 8px; background: #111111; flex-shrink: 0"></span>발언</span>
+      <span style="display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0"><span style="width: 8px; height: 8px; background: #D07F23; flex-shrink: 0"></span>자막</span>
+      <span style="display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0"><span style="width: 8px; height: 8px; background: #CCCCCC; flex-shrink: 0"></span>화면 (v1 비활성)</span>
+    </div>
+
+    <div style="margin-top: 40px; display: grid; grid-template-columns: 376px 1fr; gap: 56px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <sc-for list="{{ findings }}" as="f" hint-placeholder-count="5">
+          <div onClick="{{ f.select }}" style="{{ f.rowStyle }}" style-hover="background: #F1F9FF">
+            <div style="display: flex; align-items: baseline; gap: 12px">
+              <span style="font-size: 15px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums; flex-shrink: 0">{{ f.time }}</span>
+              <span style="{{ f.kindStyle }}">{{ f.kind }}</span>
+              <span style="margin-left: auto; font-size: 12px; line-height: 20px; color: #757575; white-space: nowrap; flex-shrink: 0">{{ f.decisionLabel }}</span>
+            </div>
+            <div style="margin-top: 6px; font-size: 15px; line-height: 24px; color: #757575">{{ f.title }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <article>
+        <div style="display: flex; align-items: baseline; gap: 16px; flex-shrink: 0">
+          <span style="font-size: 40px; line-height: 48px; font-weight: 500; font-variant-numeric: tabular-nums">{{ sel.time }}</span>
+          <span style="{{ selKindStyle }}">{{ sel.kind }}</span>
+          <span style="font-size: 12px; line-height: 20px; color: #757575; white-space: nowrap">근거 수준 · {{ sel.level }}</span>
+        </div>
+        <h2 style="margin: 20px 0 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px; max-width: 720px; text-wrap: pretty; flex-shrink: 0">{{ sel.title }}</h2>
+
+        <div style="margin-top: 36px; display: flex; flex-direction: column">
+          <div style="display: grid; grid-template-columns: 240px 1fr; padding: 24px 0; box-shadow: inset 0 1px 0 0 #E5E5E5">
+            <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">1 · 왜 검토 대상인가</div>
+            <div style="font-size: 15px; line-height: 28px; text-wrap: pretty">{{ sel.reason }}</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 240px 1fr; padding: 24px 0; box-shadow: inset 0 1px 0 0 #E5E5E5">
+            <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">2 · 실제 발언</div>
+            <div style="font-size: 15px; line-height: 28px">{{ sel.speech }}</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 240px 1fr; padding: 24px 0; box-shadow: inset 0 1px 0 0 #E5E5E5">
+            <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">3 · 실제 화면 / 자막</div>
+            <div>
+              <div style="font-size: 15px; line-height: 28px; font-weight: 500">{{ sel.caption }}</div>
+              <div style="margin-top: 16px; width: 260px; height: 146px; border-radius: 10px; background: #F2F2F2; display: flex; align-items: center; justify-content: center; font-size: 12px; line-height: 20px; color: #757575">대표 프레임 {{ sel.time }}</div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 240px 1fr; padding: 24px 0; box-shadow: inset 0 1px 0 0 #E5E5E5">
+            <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">4 · 연결된 참조</div>
+            <div style="font-size: 15px; line-height: 28px; color: #757575">{{ sel.reference }}</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 240px 1fr; padding: 24px 0; box-shadow: inset 0 1px 0 0 #E5E5E5">
+            <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">5 · 다른 해석</div>
+            <div style="font-size: 15px; line-height: 28px; text-wrap: pretty">{{ sel.alt }}</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 240px 1fr; padding: 24px 0; box-shadow: inset 0 1px 0 0 #E5E5E5">
+            <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">6 · 근거 수준</div>
+            <div style="font-size: 15px; line-height: 28px">{{ sel.level }} — {{ sel.levelNote }}</div>
+          </div>
+        </div>
+
+        <div style="position: sticky; bottom: 0; margin-top: 8px; padding: 24px 0 20px; background: #FFFFFF; box-shadow: inset 0 1px 0 0 #111111">
+          <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">최종 판단은 제작자가 합니다</div>
+          <div style="display: flex; gap: 16px; margin-top: 14px; font-size: 15px; line-height: 24px; font-weight: 500">
+            <span onClick="{{ markFixed }}" style="{{ dFixed }}" style-hover="box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #29A4FF">수정함</span>
+            <span onClick="{{ markOk }}" style="{{ dOk }}" style-hover="box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #29A4FF">확인함</span>
+            <span onClick="{{ markHold }}" style="{{ dHold }}" style-hover="box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #29A4FF">보류</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ───────── S-5 검수 이력 ───────── -->
+  <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ labelStyle }}">S-5 · 검수 이력</div>
+  <main style="max-width: 1440px; margin: 0 auto; padding: 80px 96px 120px; width: 100%; box-sizing: border-box; flex-shrink: 0">
+    <h1 style="margin: 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">검수 이력</h1>
+    <p style="margin: 16px 0 0; font-size: 15px; line-height: 28px; color: #757575">자막 강도 관련 검출이 최근 네 편에서 반복됩니다.</p>
+
+    <div style="margin-top: 40px">
+      <div style="display: grid; grid-template-columns: 1fr 140px 120px 120px 140px; gap: 24px; padding: 12px 0; box-shadow: inset 0 -1px 0 0 #111111; font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">
+        <div>파일명</div><div>검수일</div><div>검출</div><div>수정함</div><div>상태</div>
+      </div>
+      <sc-for list="{{ history }}" as="h" hint-placeholder-count="6">
+        <div onClick="{{ h.open }}" style="display: grid; grid-template-columns: 1fr 140px 120px 120px 140px; gap: 24px; align-items: center; height: 68px; box-shadow: inset 0 -1px 0 0 #E5E5E5; font-size: 15px; line-height: 24px; cursor: pointer; transition: background-color 120ms linear" style-hover="background: #F1F9FF">
+          <div style="font-weight: 500">{{ h.name }}</div>
+          <div style="color: #757575; font-variant-numeric: tabular-nums">{{ h.date }}</div>
+          <div style="color: #757575">{{ h.found }}</div>
+          <div style="color: #757575">{{ h.fixed }}</div>
+          <div style="{{ h.stateStyle }}">{{ h.state }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </main>
+  </sc-if>
+
+  <!-- ───────── S-6 설정 · 결제 ───────── -->
+  <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ labelStyle }}">S-6 · 설정 · 결제</div>
+  <main style="max-width: 1440px; margin: 0 auto; padding: 80px 96px 120px; width: 100%; box-sizing: border-box; flex-shrink: 0">
+    <h1 style="margin: 0 0 56px; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">설정 · 결제</h1>
+
+    <div style="display: grid; grid-template-columns: 240px 800px; gap: 64px; padding-bottom: 56px; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+      <h2 style="margin: 0; font-size: 15px; line-height: 24px; font-weight: 500">요금제</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #E5E5E5">
+        <div onClick="{{ pickSingle }}" style="{{ planSingle }}" style-hover="background: #F1F9FF">
+          <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">크리에이터 요금제</div>
+          <div style="margin-top: 12px; font-size: 27px; line-height: 36px; font-weight: 500">0원</div>
+          <p style="margin: 12px 0 0; font-size: 15px; line-height: 28px; color: #757575">FREE</p>
+        </div>
+        <div onClick="{{ pickSolo }}" style="{{ planSolo }}" style-hover="background: #F1F9FF">
+          <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">스튜디오 요금제</div>
+          <div style="margin-top: 12px; font-size: 27px; line-height: 36px; font-weight: 500">0원</div>
+          <p style="margin: 12px 0 0; font-size: 15px; line-height: 28px; color: #757575">FREE</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 240px 800px; gap: 64px; padding: 56px 0; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+      <h2 style="margin: 0; font-size: 15px; line-height: 24px; font-weight: 500">데이터</h2>
+      <div style="display: flex; flex-direction: column">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; padding-bottom: 20px">
+          <div>
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">보관 중인 원본 영상</div>
+            <div style="margin-top: 4px; font-size: 12px; line-height: 20px; color: #757575">1건 · 14시간 후 자동 삭제 예정</div>
+          </div>
+          <span onClick="{{ noop }}" style="font-size: 15px; line-height: 24px; font-weight: 500; cursor: pointer; white-space: nowrap; box-shadow: inset 0 -1px 0 0 #E5E5E5" style-hover="box-shadow: inset 0 -1px 0 0 #29A4FF">지금 삭제</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; padding-top: 20px; box-shadow: inset 0 1px 0 0 #E5E5E5">
+          <div>
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">리포트 기록</div>
+            <div style="margin-top: 4px; font-size: 12px; line-height: 20px; color: #757575">6건 · 텍스트 결과와 대표 프레임</div>
+          </div>
+          <span onClick="{{ noop }}" style="font-size: 15px; line-height: 24px; font-weight: 500; cursor: pointer; white-space: nowrap; box-shadow: inset 0 -1px 0 0 #E5E5E5" style-hover="box-shadow: inset 0 -1px 0 0 #29A4FF">전체 삭제</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 240px 800px; gap: 64px; padding-top: 56px">
+      <h2 style="margin: 0; font-size: 15px; line-height: 24px; font-weight: 500">분석 범위</h2>
+      <p style="margin: 0; font-size: 15px; line-height: 28px; color: #757575">발언 · 화면 자막 · 발언과 자막 비교가 켜져 있습니다. 화면 속 상징 유사도 탐지는 참조 데이터베이스 수록 기준이 확정되기 전까지 비활성입니다.</p>
+    </div>
+  </main>
+  </sc-if>
+
+  <footer style="background: #4BB1FD; color: #FFFFFF; margin-top: auto; height: 224px; flex-shrink: 0; box-sizing: border-box">
+    <div style="max-width: 1440px; margin: 0 auto; padding: 48px 96px 0; box-sizing: border-box; display: grid; grid-template-columns: 245.25px 245.25px 1fr; gap: 0; height: 100%">
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 16px; line-height: 20px; font-weight: 500">
+        <div style="color: #FFFFFF; opacity: 0.75; font-size: 12px; line-height: 20px">제품</div>
+        <span onClick="{{ goUpload }}" style="cursor: pointer; color: #FFFFFF; transition: opacity 120ms linear" style-hover="opacity: 0.7">업로드</span>
+        <span onClick="{{ goReport }}" style="cursor: pointer; color: #FFFFFF; transition: opacity 120ms linear" style-hover="opacity: 0.7">검수 리포트</span>
+        <span onClick="{{ goHistory }}" style="cursor: pointer; color: #FFFFFF; transition: opacity 120ms linear" style-hover="opacity: 0.7">검수 이력</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 16px; line-height: 20px; font-weight: 500">
+        <div style="color: #FFFFFF; opacity: 0.75; font-size: 12px; line-height: 20px">정책</div>
+        <span style="color: #FFFFFF">데이터 보관</span>
+        <span style="color: #FFFFFF">AI 출력 원칙</span>
+        <span style="color: #FFFFFF">참조 데이터베이스 기준</span>
+      </div>
+      <div style="justify-self: end; width: 410.516px; text-align: right; display: flex; flex-direction: column">
+        <div style="display: flex; justify-content: flex-end; color: #FFFFFF"><svg width="76" height="27" viewBox="2 7 71.5 26.5" role="img" aria-label="OoPs!?"><path d="M16.59 8.78L3.81 8.78L3 11.19L9.78 11.19Q6.06 13.22 4.13 17L4.13 17Q2.38 20.44 2.38 24.72L2.38 24.72Q2.38 27.88 4.44 30.22L4.44 30.22Q6.63 32.66 9.91 32.66L9.91 32.66Q12.44 32.66 14.69 31.28L14.69 31.28Q16.75 30.03 18.34 27.78L18.34 27.78Q19.88 25.66 20.72 23.03L20.72 23.03Q21.56 20.41 21.56 17.91L21.56 17.91Q21.56 15.13 20 13.41L20 13.41Q18.41 11.63 15.66 11.34L15.66 11.34L14.81 13.56Q16.97 13.88 17.88 15L17.88 15Q18.81 16.09 18.81 18.34L18.81 18.34Q18.81 20.53 17.97 22.75L17.97 22.75Q17.19 24.84 15.84 26.59L15.84 26.59Q14.53 28.31 12.97 29.31L12.97 29.31Q11.41 30.34 10 30.34L10 30.34Q7.81 30.34 6.41 28.56L6.41 28.56Q4.97 26.78 4.97 24.06L4.97 24.06Q4.97 19.41 7.75 15.59L7.75 15.59Q10.81 11.38 15.69 10.88L15.69 10.88L16.59 8.78Z M31.94 16.13L32.78 14.44L21.47 14.44L20.34 16.78L24.94 16.78Q22.56 18.09 21.09 20.31L21.09 20.31Q19.41 22.84 19.41 25.91L19.41 25.91Q19.41 28.69 21.38 30.63L21.38 30.63Q23.41 32.66 26.44 32.66L26.44 32.66Q30.34 32.66 33.03 30.16L33.03 30.16Q35.91 27.47 35.91 23L35.91 23Q35.91 20.16 34.38 18.59L34.38 18.59Q32.91 17.06 30.09 16.78L30.09 16.78L29.63 19.16Q31.66 19.47 32.38 20.28L32.38 20.28Q33.06 21.06 33.06 23L33.06 23Q33.06 25.97 31.53 27.97L31.53 27.97Q29.75 30.31 26.47 30.31L26.47 30.31Q24.91 30.31 23.53 29.25L23.53 29.25Q21.94 28.03 21.94 26.25L21.94 26.25Q21.94 22.72 24.03 20.06L24.03 20.06Q26.66 16.75 31.94 16.13L31.94 16.13Z M37.53 8.81L34.88 8.81L34.88 32.16L37.53 32.16L37.53 16.88Q37.53 14.50 39.16 12.66L39.16 12.66Q40.94 10.69 43.72 10.69L43.72 10.69Q45.34 10.69 46.38 12.16L46.38 12.16Q47.38 13.59 47.38 15.88L47.38 15.88Q47.38 18.91 45.75 20.28L45.75 20.28Q43.97 21.84 39.69 21.88L39.69 21.88L39.03 24.28Q44.56 24.47 47.41 22.28L47.41 22.28Q50.22 20.09 50.22 15.72L50.22 15.72Q50.22 11.84 48.19 9.97L48.19 9.97Q46.47 8.34 43.50 8.34L43.50 8.34Q41.78 8.34 40.13 9.25L40.13 9.25Q38.63 10.09 37.53 11.50L37.53 11.50L37.53 8.81Z M59 17.53L59.75 15.16Q59.28 14.78 58.38 14.56L58.38 14.56Q57.50 14.38 56.63 14.38L56.63 14.38Q53.47 14.38 51.34 15.94L51.34 15.94Q49.34 17.44 49.34 19.50L49.34 19.50Q49.34 21.31 50.81 22.50L50.81 22.50Q51.69 23.19 54 24.13L54 24.13Q55.91 24.91 56.63 25.44L56.63 25.44Q57.78 26.28 57.78 27.53L57.78 27.53Q57.78 29.03 56 29.75L56 29.75Q54.53 30.38 51.97 30.38L51.97 30.38Q50.81 30.38 49.56 30L49.56 30Q48.78 29.75 48.03 29.41L48.03 29.41L47.22 31.94Q48.56 32.31 49.81 32.53L49.81 32.53Q51.09 32.75 51.97 32.75L51.97 32.75Q55.84 32.75 58.19 31.22L58.19 31.22Q60.44 29.78 60.44 27.66L60.44 27.66Q60.44 25.47 58.78 24.09L58.78 24.09Q57.81 23.28 55.38 22.28L55.38 22.28Q53.66 21.56 53.03 21.13L53.03 21.13Q52.03 20.41 52.03 19.44L52.03 19.44Q52.03 18 53.28 17.34L53.28 17.34Q54.34 16.81 56.41 16.81L56.41 16.81Q57 16.81 57.75 17.03L57.75 17.03Q58.44 17.22 59 17.53L59 17.53Z M63.28 26.22L60.44 26.22L60.44 32.25L63.28 32.25L63.28 26.22ZM63.28 8.25L60.44 8.25L60.44 25.28L63.28 25.28L63.28 8.25Z M68.34 26.22L65.56 26.22L65.56 32.19L68.34 32.19L68.34 26.22ZM67.56 7.03L65.75 9.09Q67.97 10.69 69.16 12.31L69.16 12.31Q70.31 13.88 70.31 15.22L70.31 15.22Q70.31 16.13 69.75 17L69.75 17Q69.41 17.53 68.44 18.56L68.44 18.56Q67.06 20.06 66.50 21.13L66.50 21.13Q65.56 22.91 65.56 25.25L65.56 25.25L68.31 25.25Q68.31 23.31 69.16 21.78L69.16 21.78Q69.69 20.88 71 19.47L71 19.47Q72.06 18.31 72.47 17.69L72.47 17.69Q73.13 16.63 73.13 15.44L73.13 15.44Q73.13 13.53 71.75 11.38L71.75 11.38Q70.28 9.09 67.56 7.03L67.56 7.03Z" fill="currentColor"></path></svg></div>
+        <p style="margin: 16px 0 0; font-size: 12px; line-height: 20px; color: #FFFFFF">AI는 의도와 정치 성향, 법률 위반을 판정하지 않습니다. 다시 확인할 구간만 제시합니다.</p>
+        <p style="margin: 21px 0 0; font-size: 10px; line-height: 15px; font-weight: 200; color: #FFFFFF">원본 영상 24시간 내 자동 삭제 · 모델 학습 미사용 · 전 구간 암호화<br>© 2026 OoPs!?</p>
+      </div>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const BLUE = "#29A4FF";
+const KIND_COLOR = { "발언": "#111111", "자막": "#D07F23", "화면": "#CCCCCC" };
+
+const FINDINGS = [
+  { id: "f1", time: "02:14", at: 134, kind: "자막", level: "직접 근거",
+    title: "화면 자막이 실제 발언보다 비판 강도가 높습니다",
+    reason: "같은 시각의 발언과 자막의 강도 차이가 큽니다. 출연자의 입장이 실제보다 공격적으로 전달될 수 있습니다.",
+    speech: "“조금 아쉬웠습니다.”",
+    caption: "“역대 최악의 선택”",
+    reference: "해당 없음 (화면 유형에만 표시됩니다)",
+    alt: "직전 문맥에서 다른 대상을 두고 한 평가를 요약한 자막으로 읽힐 수도 있습니다.",
+    levelNote: "발언과 자막이 화면과 음성에서 모두 확인됩니다." },
+  { id: "f2", time: "04:17", at: 257, kind: "발언", level: "맥락 추정",
+    title: "특정 집단 전체에 대한 일반화로 받아들여질 가능성이 있습니다",
+    reason: "특정 지역 거주자를 대상으로 한 서술이 집단 전체의 속성으로 읽힐 수 있습니다.",
+    speech: "“이 지역에는 젊은 사람들이 살 이유가 없는 것 같아요.”",
+    caption: "자막 없음",
+    reference: "해당 없음",
+    alt: "앞서 언급한 특정 사례 한 곳을 지칭한 것으로 읽힐 수도 있습니다.",
+    levelNote: "해석에 기반하며 확실성이 가장 낮습니다." },
+  { id: "f3", time: "05:48", at: 348, kind: "발언", level: "직접 근거",
+    title: "확인이 필요한 내용이 사실처럼 단정되어 있습니다",
+    reason: "출처를 밝히지 않은 수치가 확정된 사실처럼 서술됩니다.",
+    speech: "“작년에만 절반 이상이 빠져나갔습니다.”",
+    caption: "“절반 이상 이탈”",
+    reference: "해당 없음",
+    alt: "특정 기관 발표를 인용한 것이라면 출처를 함께 밝히는 편이 안전합니다.",
+    levelNote: "발언과 자막에서 직접 확인됩니다." },
+  { id: "f4", time: "06:31", at: 391, kind: "자막", level: "직접 근거",
+    title: "발언은 개별 사례인데 자막이 집단으로 확대합니다",
+    reason: "발언은 한 사람의 사례를 말하지만 자막은 직군 전체를 지칭합니다.",
+    speech: "“그 담당자 한 분이 그렇게 처리했더라고요.”",
+    caption: "“이 업계가 일하는 방식”",
+    reference: "해당 없음",
+    alt: "업계 관행을 설명하는 별도 구간의 자막이 이어진 것으로 볼 수도 있습니다.",
+    levelNote: "발언과 자막의 지칭 범위 차이가 직접 확인됩니다." },
+  { id: "f5", time: "07:52", at: 472, kind: "발언", level: "맥락 추정",
+    title: "실명 인물에 대한 언급이 주제와 직접 연결되지 않습니다",
+    reason: "해설의 논지와 무관한 지점에서 실명이 등장합니다.",
+    speech: "“○○○ 씨도 예전에 비슷한 얘기 했었죠.”",
+    caption: "자막 없음",
+    reference: "해당 없음",
+    alt: "논지를 보강하는 인용으로 읽힐 수도 있습니다.",
+    levelNote: "해석에 기반합니다." }
+];
+
+const STEPS = [
+  "음성을 텍스트로 변환",
+  "발언 리스크 후보 탐지",
+  "화면 변화 감지 및 대표 프레임 추출",
+  "화면 자막 OCR",
+  "발언과 자막 대조"
+];
+
+const HISTORY = [
+  { name: "8월 2주차 시사 해설.mp4", date: "2026-08-04", found: "6건", fixed: "3건", state: "완료" },
+  { name: "경제 브리핑 32화.mp4", date: "2026-07-29", found: "4건", fixed: "2건", state: "완료" },
+  { name: "인터뷰 재편집본.mov", date: "2026-07-22", found: "9건", fixed: "5건", state: "완료" },
+  { name: "7월 셋째주 리뷰.mp4", date: "2026-07-18", found: "2건", fixed: "0건", state: "완료" },
+  { name: "특집 대담 1부.mp4", date: "2026-07-11", found: "7건", fixed: "4건", state: "완료" },
+  { name: "예고편 컷.mp4", date: "2026-07-09", found: "—", fixed: "—", state: "실패" }
+];
+
+const FILE_NAME = "과거에 실수로 3번이나 음주 운전 했다는 임성근 셰프.mp4";
+const DURATION = 581;
+const START_BASE = "display: inline-flex; align-items: center; justify-content: center; width: 124px; height: 60px; border-radius: 15px; font-size: 15px; line-height: 24px; font-weight: 700; white-space: nowrap; flex-shrink: 0; cursor: pointer; background: #29A4FF; color: #FFFFFF; transition: box-shadow 200ms ease-out, background-color 120ms linear;";
+const NAV_BASE = "cursor: pointer; padding: 4px 0; white-space: nowrap; transition: opacity 120ms linear";
+const KIND_CHIP = "display: inline-flex; white-space: nowrap; flex-shrink: 0; font-size: 12px; line-height: 18px; font-weight: 500; padding: 2px 10px; box-shadow: inset 0 0 0 1px #E5E5E5";
+
+class Component extends DCLogic {
+  state = { screen: "all", file: false, step: 0, selId: "f1", decisions: {}, plan: "single", hover: false, drag: false, files: [], emailA: "", emailB: "", toast: null, heroStep: 2 };
+  inputRef = React.createRef();
+
+  describe(f) {
+    return {
+      name: f.name,
+      size: (f.size / (1024 * 1024)).toFixed(2) + " MB",
+      type: f.type || "video",
+      modified: new Date(f.lastModified).toLocaleDateString("ko-KR")
+    };
+  }
+
+  takeFiles = (list) => {
+    const files = Array.from(list || []).slice(0, 1).map(f => this.describe(f));
+    if (files.length) this.setState({ files, file: true, drag: false });
+    else this.setState({ drag: false });
+  };
+
+  componentDidMount() {
+    this.heroTimer = setInterval(() => {
+      if (this.state.screen === "landing" || this.state.screen === "all") {
+        this.setState(s => ({ heroStep: (s.heroStep + 1) % 6 }));
+      }
+    }, 1500);
+  }
+
+  componentWillUnmount() { clearInterval(this.timer); clearTimeout(this.toastTimer); clearInterval(this.heroTimer); }
+
+  notify = (key) => {
+    const value = (this.state[key] || "").trim();
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+    clearTimeout(this.toastTimer);
+    this.setState({ toast: null }, () => {
+      this.setState({
+        toast: ok
+          ? { text: "설문 메일을 보냈습니다", sub: value, ok: true }
+          : { text: "이메일 주소를 확인해 주세요", sub: "예: name@channel.com", ok: false },
+        [key]: ok ? "" : value
+      });
+      this.toastTimer = setTimeout(() => this.setState({ toast: null }), 3400);
+    });
+  };
+
+  go = (screen) => {
+    clearInterval(this.timer);
+    this.setState({ screen });
+    window.scrollTo(0, 0);
+  };
+
+  startAnalysis = () => {
+    clearInterval(this.timer);
+    this.setState({ screen: "analyzing", step: 0, file: true });
+    window.scrollTo(0, 0);
+    this.timer = setInterval(() => {
+      const next = this.state.step + 1;
+      if (next > STEPS.length) {
+        clearInterval(this.timer);
+        this.setState({ screen: "report" });
+        window.scrollTo(0, 0);
+      } else {
+        this.setState({ step: next });
+      }
+    }, 1100);
+  };
+
+  setDecision = (v) => this.setState(s => ({ decisions: Object.assign({}, s.decisions, { [s.selId]: v }) }));
+
+  navStyle(name) {
+    const on = this.state.screen === name;
+    return NAV_BASE + "; opacity: " + (on ? "1" : "0.5") + "; box-shadow: " + (on ? "inset 0 -2px 0 0 #111111" : "none");
+  }
+
+  decStyle(v) {
+    const on = this.state.decisions[this.state.selId] === v;
+    return "display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; flex-shrink: 0; box-sizing: border-box; height: 40px; padding: 0 20px; border-radius: 30px; cursor: pointer; transition: box-shadow 200ms ease-out, background-color 120ms linear, border-color 120ms linear; "
+      + (on ? "background: " + BLUE + "; color: #FFFFFF; border: 1px solid " + BLUE + ";" : "background: #FFFFFF; border: 1px solid #CCCCCC;");
+  }
+
+  stepRows(activeIndex, compact) {
+    return STEPS.map((label, i) => {
+      const done = i < activeIndex;
+      const active = i === activeIndex;
+      return {
+        label,
+        state: done ? "완료" : active ? "진행 중" : "대기",
+        labelStyle: "font-size: " + (compact ? "12px" : "15px") + "; line-height: " + (compact ? "20px" : "24px")
+          + "; font-weight: " + (active ? "500" : "400")
+          + "; color: " + (done || active ? "#111111" : "#757575"),
+        dotStyle: "width: 8px; height: 8px; border-radius: 100px; justify-self: center; background: "
+          + (done ? "#111111" : active ? BLUE + "; animation: oops-pulse 1.5s ease-out infinite" : "#E5E5E5")
+      };
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const sel = FINDINGS.find(f => f.id === s.selId) || FINDINGS[0];
+    const all = s.screen === "all";
+    const stepVal = all ? 2 : s.step;
+    const decLabels = { fixed: "수정함", ok: "확인함", hold: "보류" };
+
+    const findings = FINDINGS.map(f => {
+      const active = f.id === s.selId;
+      const color = KIND_COLOR[f.kind];
+      return Object.assign({}, f, {
+        select: () => this.setState({ selId: f.id }),
+        decisionLabel: decLabels[s.decisions[f.id]] || "미결정",
+        kindStyle: KIND_CHIP + "; color: " + color,
+        rowStyle: "cursor: pointer; border-radius: 10px; padding: 20px 16px; transition: background-color 120ms linear; "
+          + (active ? "background: #F1F9FF;" : "background: #FFFFFF;")
+          + " box-shadow: inset 0 -1px 0 0 #E5E5E5;",
+        markerStyle: {
+          position: "absolute", top: 0, bottom: 0, left: (f.at / DURATION * 100) + "%",
+          width: "2px", cursor: "pointer", transform: "translateX(-1px)", transition: "opacity 120ms linear"
+        },
+        markerBarStyle: {
+          position: "absolute", inset: 0, background: color,
+          outline: active ? "4px solid rgba(41,164,255,0.22)" : "none"
+        },
+        markerTimeStyle: {
+          position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)",
+          fontSize: "12px", lineHeight: "20px", fontVariantNumeric: "tabular-nums",
+          color: active ? BLUE : "#757575", fontWeight: 500, whiteSpace: "nowrap"
+        }
+      });
+    });
+
+    const pct = Math.min(100, Math.round(stepVal / STEPS.length * 100));
+    const picked = s.files.length > 0;
+    const lifted = s.hover || s.drag;
+
+    return {
+      isLanding: all || s.screen === "landing", isUpload: all || s.screen === "upload",
+      isAnalyzing: all || s.screen === "analyzing", isReport: all || s.screen === "report",
+      isHistory: all || s.screen === "history", isSettings: all || s.screen === "settings",
+      goLanding: () => this.go("landing"), goUpload: () => this.go("upload"),
+      goReport: () => this.go("report"), goHistory: () => this.go("history"),
+      goSettings: () => this.go("settings"), goAll: () => this.go("all"), noop: () => {},
+      navAll: this.navStyle("all"),
+      navUpload: this.navStyle("upload"), navReport: this.navStyle("report"),
+      navHistory: this.navStyle("history"), navSettings: this.navStyle("settings"),
+      labelStyle: all
+        ? "background: #111111; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 500; letter-spacing: 0.4px; padding: 10px 96px; margin-top: 64px; flex-shrink: 0"
+        : "display: none",
+
+      fileName: s.files.length ? s.files[0].name : FILE_NAME,
+
+      emailA: s.emailA, emailB: s.emailB,
+      setEmailA: (e) => this.setState({ emailA: e.target.value }),
+      setEmailB: (e) => this.setState({ emailB: e.target.value }),
+      submitA: () => this.notify("emailA"),
+      submitB: () => this.notify("emailB"),
+      keyA: (e) => { if (e.key === "Enter") this.notify("emailA"); },
+      keyB: (e) => { if (e.key === "Enter") this.notify("emailB"); },
+      toastOn: !!s.toast,
+      toastText: s.toast ? s.toast.text : "",
+      toastSub: s.toast ? s.toast.sub : "",
+      toastStyle: {
+        position: "fixed", top: "20px", left: "50%", zIndex: 100,
+        display: "flex", alignItems: "center", gap: "12px",
+        padding: "14px 24px 14px 18px", borderRadius: "100px",
+        background: "#FFFFFF", boxShadow: "0 12px 40px rgba(17,17,17,0.16), inset 0 0 0 1px "
+          + (s.toast && s.toast.ok ? "#B8E1FF" : "#E5E5E5"),
+        animation: "oops-toast 420ms cubic-bezier(0.2, 0.9, 0.3, 1.4) both"
+      },
+      toastIconStyle: {
+        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        width: "26px", height: "26px", borderRadius: "100px",
+        background: s.toast && s.toast.ok ? BLUE : "#CCCCCC"
+      },
+      hasFile: picked, noFile: !picked,
+      inputRef: this.inputRef,
+      inputChange: (e) => this.takeFiles(e.target.files),
+      pickFile: () => { if (this.inputRef.current) this.inputRef.current.click(); },
+      zoneEnter: () => this.setState({ hover: true }),
+      zoneLeave: () => this.setState({ hover: false, drag: false }),
+      zoneDragOver: (e) => { e.preventDefault(); if (!s.drag) this.setState({ drag: true }); },
+      zoneDragLeave: (e) => { e.preventDefault(); this.setState({ drag: false }); },
+      zoneDrop: (e) => { e.preventDefault(); this.takeFiles(e.dataTransfer && e.dataTransfer.files); },
+      dragActive: s.drag,
+      pickedFiles: s.files,
+      ghostStyle: {
+        position: "absolute", inset: 0, borderRadius: "10px",
+        border: "1px dashed " + BLUE, background: "transparent",
+        opacity: lifted ? 1 : 0, transition: "opacity 200ms linear"
+      },
+      tileStyle: {
+        position: "absolute", inset: 0, borderRadius: "10px", background: "#FFFFFF",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        boxShadow: lifted ? "0 18px 50px rgba(17,17,17,0.16)" : "0 10px 40px rgba(17,17,17,0.08)",
+        transform: lifted ? "translate(20px, -20px)" : "translate(0, 0)",
+        opacity: lifted ? 0.94 : 1,
+        transition: "transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 200ms linear, opacity 200ms linear"
+      },
+      startAnalysis: this.startAnalysis,
+      dropStyle: "position: relative; overflow: hidden; cursor: pointer; padding: 46px 40px; text-align: center; box-sizing: border-box; border-radius: 10px; display: flex; flex-direction: column; align-items: center; background: #EDF7FF; transition: box-shadow 120ms linear; box-shadow: inset 0 0 0 "
+        + (s.drag ? "2px " + BLUE : picked ? "2px " + BLUE : "1px #B8E1FF") + ";",
+      startStyle: START_BASE,
+
+      steps: this.stepRows(stepVal, false),
+      heroSteps: this.stepRows(s.heroStep, true),
+      etaLabel: (STEPS.length - stepVal) + "0초",
+      barStyle: { width: pct + "%", height: "2px", background: BLUE, transition: "width 400ms linear" },
+
+      findings, sel, total: FINDINGS.length,
+      decided: Object.keys(s.decisions).length,
+      selKindStyle: KIND_CHIP + "; color: " + KIND_COLOR[sel.kind],
+      markFixed: () => this.setDecision("fixed"),
+      markOk: () => this.setDecision("ok"),
+      markHold: () => this.setDecision("hold"),
+      dFixed: this.decStyle("fixed"), dOk: this.decStyle("ok"), dHold: this.decStyle("hold"),
+
+      history: HISTORY.map(h => Object.assign({}, h, {
+        open: () => this.go("report"),
+        stateStyle: "font-size: 15px; line-height: 24px; color: " + (h.state === "실패" ? "#757575" : "#111111")
+      })),
+
+      planSingle: "cursor: pointer; background: #FFFFFF; padding: 32px; box-sizing: border-box; height: 172px; box-shadow: inset 0 0 0 "
+        + (s.plan === "single" ? "1px " + BLUE : "0 transparent"),
+      planSolo: "cursor: pointer; background: #FFFFFF; padding: 32px; box-sizing: border-box; height: 172px; box-shadow: inset 0 0 0 "
+        + (s.plan === "solo" ? "1px " + BLUE : "0 transparent"),
+      pickSingle: () => this.setState({ plan: "single" }),
+      pickSolo: () => this.setState({ plan: "solo" })
+    };
+  }
+}
+</script>
+<script src="/collect.js" defer></script>
+</body>
+</html>

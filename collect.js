@@ -110,6 +110,26 @@
   /* 이 입력칸이 속한 "칸 상자"(input + 화살표를 담은 flex div) */
   function boxOf(input) { return input.parentElement; }
 
+  /* ---------------------------------------------------------------- 진단
+     ?debug=1 을 붙이면 화면 우하단에 실제 동작 로그가 뜹니다.
+     "눌러도 아무 일이 없다"를 눈으로 확인할 수 있는 유일한 방법입니다. */
+  var DEBUG = /[?&]debug=1/.test(location.search);
+  var dbgBox = null;
+  function dbg(msg) {
+    if (!DEBUG) return;
+    if (!dbgBox) {
+      dbgBox = document.createElement('div');
+      dbgBox.setAttribute('style',
+        'position:fixed;right:8px;bottom:8px;z-index:2147483647;max-width:92vw;' +
+        'max-height:44vh;overflow:auto;background:#111;color:#0f0;font:12px/1.5 monospace;' +
+        'padding:10px 12px;border-radius:8px;white-space:pre-wrap');
+      (document.body || document.documentElement).appendChild(dbgBox);
+    }
+    dbgBox.textContent += msg + '\n';
+    dbgBox.scrollTop = dbgBox.scrollHeight;
+    if (window.console && console.log) console.log('[collect]', msg);
+  }
+
   /* ------------------------------------------------------- DOM 배선(1회) */
   function decorate(input) {
     if (input.getAttribute('data-oops-wired') === '1') return;
@@ -122,6 +142,24 @@
     input.setAttribute('inputmode', 'email');
     input.setAttribute('spellcheck', 'false');
     if (!input.getAttribute('aria-label')) input.setAttribute('aria-label', '이메일 주소');
+
+    /* 페이지가 자리를 미리 마련해 둔 경우(반응형 랜딩)에는 감싸지 않고
+       그 자리를 그대로 씁니다. 레이아웃을 건드릴 이유가 없습니다. */
+    var group = input.closest && input.closest('[data-oops-group]');
+    if (group) {
+      input.__status = group.querySelector('[data-oops-status]');
+      var noteSlot = group.querySelector('[data-oops-note]');
+      if (noteSlot && !noteSlot.textContent) {
+        noteSlot.textContent = CONFIG.requireConsent ? CONFIG.consentNote : CONFIG.impliedNote;
+      }
+      var hpG = el('input', 'position:absolute;left:-9999px;width:1px;height:1px;opacity:0');
+      hpG.type = 'text'; hpG.name = 'company'; hpG.tabIndex = -1;
+      hpG.setAttribute('autocomplete', 'off'); hpG.setAttribute('aria-hidden', 'true');
+      group.appendChild(hpG);
+      input.__hp = hpG;
+      dbg('배선 완료(페이지 제공 슬롯): #' + (input.id || '?'));
+      return;
+    }
 
     var box = boxOf(input);
     var parent = box.parentElement;
@@ -200,23 +238,26 @@
     var s = input.__status;
     if (!s) return;
     s.textContent = text;
-    s.style.color = tone === 'error' ? ACCENT : (tone === 'ok' ? INK : MUTED);
+    /* 페이지가 마련한 슬롯이면 색은 페이지 CSS(data-tone)가 정합니다. */
+    if (s.hasAttribute('data-oops-status')) s.setAttribute('data-tone', tone || '');
+    else s.style.color = tone === 'error' ? ACCENT : (tone === 'ok' ? INK : MUTED);
   }
 
   /* ------------------------------------------------------------- 제출 */
   function submit(input) {
-    if (input.__busy) return;
+    if (input.__busy) { dbg('무시: 이미 전송 중'); return; }
 
     var email = String(input.value || '').trim().toLowerCase();
+    dbg('제출 시도: ' + (email || '(빈 값)'));
 
-    if (!EMAIL_RE.test(email)) { say(input, MSG.invalid, 'error'); input.focus(); return; }
+    if (!EMAIL_RE.test(email)) { dbg('중단: 이메일 형식'); say(input, MSG.invalid, 'error'); input.focus(); return; }
     if (input.__consent && !input.__consent.checked) {
       say(input, MSG.consent, 'error');
       flagConsent(input);
       return;
     }
-    if (input.__hp && input.__hp.value) { say(input, MSG.ok, 'ok'); return; }   /* 봇: 조용히 무시 */
-    if (Date.now() - lastSentAt < CONFIG.throttleMs) { say(input, MSG.tooFast, 'error'); return; }
+    if (input.__hp && input.__hp.value) { dbg('중단: 허니팟'); say(input, MSG.ok, 'ok'); return; }
+    if (Date.now() - lastSentAt < CONFIG.throttleMs) { dbg('중단: 연타 방지'); say(input, MSG.tooFast, 'error'); return; }
     if (!CONFIG.endpoint) {
       say(input, MSG.noEndpoint, 'error');
       console.error('[collect] CONFIG.endpoint 가 비어 있습니다. collect.js 상단에 Apps Script 웹앱 URL을 넣어 주세요.');
@@ -244,8 +285,12 @@
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     })
-      .then(function (r) { return r.json().catch(function () { return { ok: r.ok }; }); })
+      .then(function (r) {
+        dbg('응답 http ' + r.status);
+        return r.json().catch(function () { return { ok: r.ok }; });
+      })
       .then(function (res) {
+        dbg('응답 본문: ' + JSON.stringify(res));
         if (res && res.ok) {
           say(input, res.dup ? MSG.dup : MSG.ok, 'ok');
           if (!res.dup) {
@@ -260,8 +305,10 @@
       })
       .catch(function (err) {
         say(input, MSG.fail, 'error');
+        dbg('전송 실패: ' + err);
         console.error('[collect] 전송 실패:', err,
-          '\n→ Apps Script 배포 설정에서 "액세스 권한"이 "모든 사용자"인지 확인하세요.');
+          '\n→ Apps Script 배포 설정에서 "액세스 권한"이 "모든 사용자"인지 확인하세요.',
+          '\n→ 광고 차단기나 사내/학교 네트워크가 script.google.com 요청을 막았을 수도 있습니다.');
       })
       .then(function () { input.__busy = false; });
   }
@@ -271,15 +318,38 @@
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Enter') return;
     var t = e.target;
-    if (t && t.tagName === 'INPUT' && t.type === 'email') { e.preventDefault(); submit(t); }
+    if (t && t.tagName === 'INPUT' && t.type === 'email') {
+      e.preventDefault(); dbg('Enter 감지'); submit(t);
+    }
   });
 
+  /* 진짜 <form>인 경우(반응형 랜딩) — 네이티브 제출을 가로챕니다.
+     모바일 키보드의 "이동/Go"는 keydown 없이 submit만 쏘는 경우가 있어
+     이 경로가 없으면 폰에서 조용히 아무 일도 일어나지 않습니다. */
+  document.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (!form || !form.querySelector) return;
+    var input = form.querySelector('input[type="email"]');
+    if (!input) return;
+    e.preventDefault(); dbg('form submit 감지'); submit(input);
+  }, true);
+
   document.addEventListener('click', function (e) {
-    /* 화살표는 <button>이 아니라 title="보내기"인 <span>입니다. */
-    var arrow = e.target.closest && e.target.closest('span[title="보내기"]');
-    if (!arrow) return;
-    var input = arrow.parentElement && arrow.parentElement.querySelector('input[type="email"]');
-    if (input) { e.preventDefault(); submit(input); }
+    var t = e.target;
+    if (!t || !t.closest) return;
+    /* dc export의 화살표는 <button>이 아니라 title="보내기"인 <span>입니다. */
+    var arrow = t.closest('span[title="보내기"]');
+    if (arrow) {
+      var i1 = arrow.parentElement && arrow.parentElement.querySelector('input[type="email"]');
+      if (i1) { e.preventDefault(); dbg('화살표 클릭 감지'); submit(i1); return; }
+    }
+    /* 반응형 랜딩의 제출 버튼 */
+    var btn = t.closest('button[type="submit"]');
+    if (btn) {
+      var scope = btn.form || btn.closest('[data-oops-group]') || btn.parentElement;
+      var i2 = scope && scope.querySelector('input[type="email"]');
+      if (i2) { e.preventDefault(); dbg('제출 버튼 클릭 감지'); submit(i2); }
+    }
   });
 
   /* --------------------------------------------------------- 초기화/감시 */
