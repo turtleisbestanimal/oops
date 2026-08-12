@@ -18,9 +18,9 @@
   'use strict';
 
   var CONFIG = {
-    /* Apps Script 배포 후 받은 웹앱 URL을 여기에 붙여 넣으세요.
-       https://script.google.com/macros/s/AKfy....../exec 형태입니다. */
-    endpoint: '',
+    /* Apps Script 웹앱 URL. 시트 "oops 사전 신청"(개인 Gmail 소유)로 연결됩니다.
+       재배포로 주소가 바뀌면 여기만 교체하세요. */
+    endpoint: 'https://script.google.com/macros/s/AKfycbxX5alvnRJs5WtKmmrEVPcUNvElLiHSzb-wmaqHYaFGEDKN4fkDY5g3RVJUWXqCROmQ/exec',
 
     /* 개인정보 수집 동의 체크박스를 붙일지 여부.
        한국에서는 이메일도 개인정보라 수집 목적·보관기간 고지와 동의가
