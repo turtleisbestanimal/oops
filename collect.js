@@ -80,6 +80,37 @@
     catch (e) { /* 분석 실패가 등록을 막아서는 안 됩니다 */ }
   }
 
+  /* ------------------------------------------------------------ 표시 배율
+     index.html은 viewport에 width=device-width를 선언하지만, dc 런타임이
+     레이아웃을 1440px로 고정합니다. 그래서 폰에서는 브라우저가 페이지 전체를
+     축소해 보여줍니다(375px 기기에서 약 0.26배).
+
+     그 결과 12px 글자는 실제로 3px가 되어 읽을 수도 누를 수도 없습니다.
+     여기서 축소 배율을 역산해 이 스크립트가 넣는 요소만 키웁니다.
+     데스크톱에서는 1을 반환하므로 아무 영향이 없습니다. */
+  function uiScale() {
+    var pageW = document.documentElement.scrollWidth || 1440;
+    var deviceW = (window.screen && window.screen.width) || pageW;
+    var k = deviceW / pageW;
+    if (!isFinite(k) || k <= 0 || k >= 0.7) return 1;
+    return Math.min(1 / k, 4);          /* 과도한 확대 방지 */
+  }
+
+  var _scaled = [];                     /* [element, 기준 px, 속성] */
+  function sized(node, prop, basePx) {
+    _scaled.push([node, prop, basePx]);
+    node.style[prop] = Math.round(basePx * uiScale()) + 'px';
+    return node;
+  }
+  function reapplyScale() {
+    var s = uiScale();
+    for (var i = 0; i < _scaled.length; i++) {
+      _scaled[i][0].style[_scaled[i][1]] = Math.round(_scaled[i][2] * s) + 'px';
+    }
+  }
+  window.addEventListener('resize', reapplyScale);
+  window.addEventListener('orientationchange', reapplyScale);
+
   /* ---------------------------------------------------------------- utils */
   function el(tag, style, text) {
     var n = document.createElement(tag);
@@ -125,31 +156,47 @@
     box.appendChild(hp);
     input.__hp = hp;
 
-    var extra = el('div', 'display:flex;flex-direction:column;gap:6px;max-width:378px');
+    var extra = el('div', 'display:flex;flex-direction:column;max-width:378px');
+    sized(extra, 'gap', 8);
 
     if (CONFIG.requireConsent) {
+      /* 라벨 전체가 누르는 영역입니다. 축소된 화면에서도 손가락으로
+         집을 수 있도록 세로 패딩을 넉넉히 줍니다. */
       var label = el('label',
-        'display:flex;align-items:flex-start;gap:8px;cursor:pointer;' +
-        'font-size:12px;line-height:18px;color:' + MUTED);
-      var cb = el('input', 'margin:2px 0 0;accent-color:' + OK + ';flex-shrink:0');
+        'display:flex;align-items:flex-start;cursor:pointer;color:' + INK);
+      sized(label, 'gap', 8);
+      sized(label, 'fontSize', 14);
+      sized(label, 'lineHeight', 20);
+      sized(label, 'paddingTop', 4);
+      sized(label, 'paddingBottom', 4);
+
+      var cb = el('input', 'margin:0;accent-color:' + OK + ';flex-shrink:0;cursor:pointer');
       cb.type = 'checkbox';
+      sized(cb, 'width', 16);
+      sized(cb, 'height', 16);
+      sized(cb, 'marginTop', 2);
       label.appendChild(cb);
       label.appendChild(el('span', null, CONFIG.consentLabel));
       extra.appendChild(label);
       input.__consent = cb;
 
-      extra.appendChild(el('p',
-        'margin:0;font-size:11px;line-height:16px;color:' + MUTED + ';opacity:.85',
-        CONFIG.consentNote));
+      var note = el('p', 'margin:0;color:' + MUTED, CONFIG.consentNote);
+      sized(note, 'fontSize', 12);
+      sized(note, 'lineHeight', 17);
+      extra.appendChild(note);
     }
 
-    var status = el('p', 'margin:0;font-size:12px;line-height:18px;min-height:18px;color:' + MUTED);
+    var status = el('p', 'margin:0;font-weight:500;color:' + MUTED);
+    sized(status, 'fontSize', 14);
+    sized(status, 'lineHeight', 20);
+    sized(status, 'minHeight', 20);
     status.setAttribute('role', 'status');
     status.setAttribute('aria-live', 'polite');
     extra.appendChild(status);
     input.__status = status;
 
     wrap.appendChild(extra);
+    reapplyScale();
   }
 
   function say(input, text, tone) {
