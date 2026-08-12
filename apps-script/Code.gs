@@ -7,10 +7,11 @@
  * 설치 방법은 apps-script/SETUP.md 를 보세요.
  */
 
-/* 스프레드시트에 붙여서(확장 프로그램 > Apps Script) 만들면 이 값은 비워 둬도
-   됩니다. 별도 프로젝트로 만들었다면 시트 URL의
-   /d/ 와 /edit 사이 문자열을 넣으세요. */
-var SHEET_ID = '';
+/* 대상 스프레드시트: "oops 사전 신청"
+   https://docs.google.com/spreadsheets/d/12osmxcr_PpNAVthLaQCLaCxPKYtQi7ByC0XZAlJ1n9M/edit
+   ID를 직접 지정해 두었으므로, 시트에 붙여서 만들든 별도 프로젝트로 만들든
+   똑같이 동작합니다. 다른 시트로 바꾸려면 URL의 /d/ 와 /edit 사이 문자열로 교체하세요. */
+var SHEET_ID = '12osmxcr_PpNAVthLaQCLaCxPKYtQi7ByC0XZAlJ1n9M';
 var SHEET_NAME = 'emails';
 
 /** 브라우저에서 오는 POST를 받는 진입점 */

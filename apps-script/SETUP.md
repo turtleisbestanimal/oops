@@ -19,22 +19,23 @@ Apps Script 웹앱 주소는 **공개되어도 안전합니다.** `doPost`만 �
 
 ---
 
-## 1. 스프레드시트 만들기
+## 1. 스프레드시트 — 완료됨
 
-1. <https://sheets.new> 접속 → 새 스프레드시트 생성
-2. 이름을 알아보기 쉽게 변경 (예: `OoPs 사전등록`)
+**"oops 사전 신청"** 을 쓰도록 이미 설정돼 있습니다.
 
-시트 탭 이름이나 헤더 행은 만들지 않아도 됩니다. 스크립트가 첫 제출 때
+<https://docs.google.com/spreadsheets/d/12osmxcr_PpNAVthLaQCLaCxPKYtQi7ByC0XZAlJ1n9M/edit>
+
+시트 탭이나 헤더 행은 만들지 않아도 됩니다. 첫 제출 때 스크립트가
 `emails` 시트와 헤더를 자동으로 만듭니다.
 
 ## 2. Apps Script 붙이기
 
-1. 그 스프레드시트에서 **확장 프로그램 → Apps Script**
+1. 위 스프레드시트에서 **확장 프로그램 → Apps Script**
 2. 편집기에 있던 `function myFunction() {}` 를 **전부 지우고**,
    이 폴더의 [`Code.gs`](./Code.gs) 내용을 **그대로 붙여넣기**
 3. 저장 (⌘S)
 
-> 스프레드시트에 붙여서 만들었으므로 `SHEET_ID`는 비워 둔 채로 둡니다.
+> `SHEET_ID`는 이미 채워져 있으니 그대로 두세요.
 
 ## 3. 웹앱으로 배포
 
