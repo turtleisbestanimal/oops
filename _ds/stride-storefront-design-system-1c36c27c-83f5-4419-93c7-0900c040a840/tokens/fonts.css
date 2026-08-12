@@ -1,0 +1,19 @@
+/* The source .fig ships no font binaries. It specifies Helvetica Neue (Medium /
+   Regular / Bold) for the storefront chrome and Inter (Regular / Medium / Bold /
+   ExtraBold / Black) for product surfaces. Helvetica Neue is a system face on
+   Apple platforms; elsewhere the stack falls through to Inter, loaded from
+   Google Fonts. Drop real Helvetica Neue web fonts into assets/fonts/ and add
+   @font-face rules here to remove the substitution. */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap");
+
+:root {
+  --font-core: "Helvetica Neue", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-product: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-fallback: Helvetica, Arial, sans-serif;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+  --weight-black: 900;
+}

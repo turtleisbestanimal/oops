@@ -1,0 +1,11 @@
+:root {
+  --radius-3: 3px;    /* location modal card */
+  --radius-4: 4px;    /* size chips, filter checkboxes */
+  --radius-8: 8px;    /* text inputs */
+  --radius-20: 20px;  /* small pill (40px tall) */
+  --radius-24: 24px;  /* 48px carousel arrow */
+  --radius-30: 30px;  /* standard pill button (39–62px tall) */
+  --radius-50: 50px;
+  --radius-100: 100px;/* search pill, icon buttons */
+  --radius-none: 0;   /* product images and editorial cards are square-cornered */
+}

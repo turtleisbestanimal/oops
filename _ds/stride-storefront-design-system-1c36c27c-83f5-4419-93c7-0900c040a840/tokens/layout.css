@@ -1,0 +1,16 @@
+/* Desktop-only kit: every frame in the source is 1440px wide (the checkout
+   frame is 1411px). There are no mobile or tablet frames. */
+:root {
+  --page-width: 1440px;
+  --page-gutter: 48px;
+  --content-width: 1344px;   /* 1440 − 2×48 */
+  --footer-gutter: 34px;
+  --bar-utility-height: 36px;
+  --bar-nav-height: 60px;
+  --bar-promo-height: 58px;
+  --header-height: 96px;     /* utility + nav */
+  --footer-height: 331px;
+  --pdp-rail-width: 376px;
+  --plp-filter-width: 188.156px;
+  --summary-width: 350.672px;
+}

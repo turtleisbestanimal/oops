@@ -1,0 +1,68 @@
+/* Sizes are the file's literal values — 9 through 56 for UI, plus display sizes
+   used in editorial lockups. Nothing is rounded to a scale. */
+:root {
+  --size-9: 9px;
+  --size-10: 10px;
+  --size-10-4: 10.4px;
+  --size-11: 11px;
+  --size-12: 12px;
+  --size-12-8: 12.8px;
+  --size-13: 13px;
+  --size-14: 14px;
+  --size-15: 15px;     /* the workhorse size: nav, body, prices, buttons */
+  --size-16: 16px;
+  --size-20: 20px;
+  --size-21: 21px;
+  --size-22: 22px;
+  --size-23: 23px;
+  --size-24: 24px;
+  --size-26: 26px;
+  --size-27: 27px;
+  --size-28: 28px;
+  --size-30: 30px;
+  --size-32: 32px;
+  --size-49: 49px;
+  --size-50: 50px;
+  --size-52: 52px;
+  --size-54: 54px;
+  --size-55: 55px;
+  --size-56: 56px;
+  --size-72: 72px;
+
+  --leading-12: 12px;
+  --leading-14: 14px;
+  --leading-16: 16px;
+  --leading-20: 20px;
+  --leading-24: 24px;
+  --leading-26: 26px;
+  --leading-28: 28px;
+  --leading-31-2: 31.2px;
+  --leading-32: 32px;
+  --leading-33: 33px;
+  --leading-33-6: 33.6px;
+  --leading-36: 36px;
+  --leading-60: 60px;
+
+  --tracking-title: 0.196px;  /* only tracking in the file, on the 27px PDP title */
+
+  /* Semantic roles */
+  --type-utility: var(--weight-medium) var(--size-11) / var(--leading-14) var(--font-core);
+  --type-utility-plain: var(--weight-regular) var(--size-12) / var(--leading-14) var(--font-core);
+  --type-nav: var(--weight-medium) var(--size-15) / var(--leading-24) var(--font-core);
+  --type-body: var(--weight-regular) var(--size-15) / var(--leading-24) var(--font-core);
+  --type-body-long: var(--weight-regular) var(--size-16) / var(--leading-28) var(--font-core);
+  --type-body-product: var(--weight-regular) var(--size-14) / var(--leading-28) var(--font-product);
+  --type-label: var(--weight-medium) var(--size-15) / var(--leading-24) var(--font-product);
+  --type-price: var(--weight-medium) var(--size-15) / var(--leading-24) var(--font-product);
+  --type-caption: var(--weight-regular) var(--size-12) / var(--leading-12) var(--font-core);
+  --type-footer-heading: var(--weight-medium) var(--size-12) / var(--leading-14) var(--font-core);
+
+  --type-section: var(--weight-medium) var(--size-22) / var(--leading-28) var(--font-core);
+  --type-section-lg: var(--weight-medium) var(--size-23) / var(--leading-28) var(--font-core);
+  --type-plp-count: var(--weight-medium) var(--size-24) / var(--leading-31-2) var(--font-core);
+  --type-summary: var(--weight-medium) var(--size-21) / var(--leading-33) var(--font-product);
+  --type-pdp-title: var(--weight-medium) var(--size-27) / var(--leading-33-6) var(--font-product);
+  --type-help-heading: var(--weight-medium) var(--size-28) / var(--leading-32) var(--font-core);
+  --type-page-title: var(--weight-medium) var(--size-32) / var(--leading-36) var(--font-core);
+  --type-display: var(--weight-medium) var(--size-56) / var(--leading-60) var(--font-core);
+}

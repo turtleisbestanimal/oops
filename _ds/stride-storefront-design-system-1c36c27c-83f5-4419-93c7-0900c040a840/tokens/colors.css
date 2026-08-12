@@ -1,0 +1,58 @@
+/* Every value transcribed from the source file. The palette is a near-monochrome
+   grey ramp; the only saturated colours are a burnt-orange sale/promo text
+   colour, a red alert, a blue focus ring and a pale-blue gradient run. */
+:root {
+  /* Ink ramp — darkest to lightest */
+  --ink-000: #000000;   /* rgb(0,0,0)      — secondary dark, pill fills in modals */
+  --ink-100: #111111;   /* rgb(17,17,17)   — PRIMARY text, primary button fill, footer bg */
+  --ink-200: #191919;   /* rgb(25,25,25)   — hover / pressed ink, strokes */
+  --ink-300: #666666;   /* rgb(102,102,102) */
+  --ink-400: #757575;   /* rgb(117,117,117) — secondary text, input border */
+  --ink-450: #767676;   /* rgb(118,118,118) — unselected size-chip stroke */
+  --ink-500: #7E7E7E;   /* rgb(126,126,126) — tertiary text on dark, outline stroke */
+  --ink-600: #8D8D8D;   /* rgb(141,141,141) */
+  --ink-700: #CCCCCC;   /* rgb(204,204,204) — placeholder text, secondary button border */
+
+  /* Surface ramp */
+  --surface-line: #E5E5E5;    /* rgb(229,229,229) — hairlines, disabled fill, chip stroke */
+  --surface-line-2: #E7E7E7;  /* rgb(231,231,231) */
+  --surface-100: #F2F2F2;     /* rgb(242,242,242) */
+  --surface-200: #F5F5F5;     /* rgb(245,245,245) — utility bar, search pill, tiles */
+  --surface-300: #F7F7F7;     /* rgb(247,247,247) — editorial panel wash */
+  --surface-white: #FFFFFF;
+
+  /* Saturated */
+  --accent-promo: #9E3500;    /* rgb(158,53,0)  — sale / promo copy */
+  --accent-alert: #FF0017;    /* rgb(255,0,23) */
+  --accent-focus: #0075FF;    /* rgb(0,117,255) — focus ring + selected radio dot */
+  --accent-sky: #6CACE4;      /* rgb(108,172,228) — gradient run start */
+  --accent-sky-light: #93CAEE;/* rgb(147,202,238) — gradient run end */
+
+  /* Semantic aliases */
+  --text-primary: var(--ink-100);
+  --text-secondary: var(--ink-400);
+  --text-tertiary: var(--ink-500);
+  --text-placeholder: var(--ink-700);
+  --text-inverse: var(--surface-white);
+  --text-promo: var(--accent-promo);
+  --text-disabled: var(--ink-400);
+
+  --surface-page: var(--surface-white);
+  --surface-utility: var(--surface-200);
+  --surface-card: var(--surface-white);
+  --surface-tile: var(--surface-200);
+  --surface-footer: var(--ink-100);
+  --surface-disabled: var(--surface-line);
+
+  --border-default: var(--surface-line);
+  --border-strong: var(--ink-100);
+  --border-input: var(--ink-400);
+  --border-subtle: var(--ink-700);
+  --border-focus: var(--accent-focus);
+
+  --action-primary: var(--ink-100);
+  --action-primary-hover: var(--ink-200);
+  --action-primary-text: var(--surface-white);
+  --action-secondary-border: var(--ink-700);
+  --action-ghost-hover: var(--surface-200);
+}
