@@ -1,10 +1,10 @@
 /* ============================================================================
-   OoPs!? — 이메일 수집기
+   OoPs!? — 이메일 수집 + 방문자 분석
    ----------------------------------------------------------------------------
    디자인 export(index.html)는 입력칸의 "모양"만 만들어 냅니다. <form>도
    <button>도 없어서, 이메일을 쳐도 아무 데도 가지 않습니다.
    이 파일이 그 입력칸을 찾아 배선하고, Google Apps Script 웹앱으로
-   POST를 보냅니다.
+   POST를 보냅니다. Vercel Web Analytics도 여기서 함께 불러옵니다.
 
    index.html은 디자인을 다시 export할 때마다 통째로 덮어써지므로,
    이 파일에는 절대 손대지 않아도 되도록 모든 로직을 여기에 두었습니다.
@@ -31,7 +31,17 @@
     consentNote: '수집 항목: 이메일 · 목적: 서비스 오픈 알림 · 보관: 발송 후 파기(수신거부 시 즉시 삭제)',
 
     /* 같은 브라우저에서 연속 제출을 막는 최소 간격(ms) */
-    throttleMs: 3000
+    throttleMs: 3000,
+
+    /* Vercel Web Analytics(방문자 수·유입 경로·국가·기기)를 불러올지 여부.
+       디자인 export에는 이 스크립트가 없어서, index.html을 교체할 때마다
+       분석이 조용히 끊깁니다. 여기서 함께 불러 두면 재-export 후에도
+       <script src="./collect.js"> 한 줄만 되살리면 분석까지 같이 살아납니다. */
+    analytics: true,
+
+    /* 이메일 등록 성공 시 커스텀 이벤트를 보낼지 여부.
+       방문자 대비 등록 전환율과, 히어로/하단 CTA 중 어디가 잘 먹히는지 볼 수 있습니다. */
+    analyticsEvent: true
   };
 
   var MSG = {
@@ -48,6 +58,27 @@
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   var INK = '#111111', MUTED = '#757575', ACCENT = '#9E3500', OK = '#2A86FA';
   var lastSentAt = 0;
+
+  /* ------------------------------------------------- Vercel Web Analytics
+     스크립트가 도착하기 전에 호출된 이벤트는 window.vaq 큐에 쌓였다가
+     로드 후 한꺼번에 전송됩니다. 그래서 큐 스텁을 먼저 만들어 둡니다. */
+  function loadAnalytics() {
+    if (!CONFIG.analytics || window.__oopsVA) return;
+    window.__oopsVA = true;
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    var s = document.createElement('script');
+    s.defer = true;
+    s.src = '/_vercel/insights/script.js';
+    s.onerror = function () { console.warn('[collect] Vercel Analytics 스크립트를 불러오지 못했습니다.'); };
+    (document.head || document.documentElement).appendChild(s);
+  }
+
+  function trackSignup(slot) {
+    if (!CONFIG.analyticsEvent || typeof window.va !== 'function') return;
+    /* data 값은 문자열·숫자·불리언만 허용됩니다. 이메일 주소는 절대 보내지 않습니다. */
+    try { window.va('event', { name: 'email_signup', data: { slot: slot || 'unknown' } }); }
+    catch (e) { /* 분석 실패가 등록을 막아서는 안 됩니다 */ }
+  }
 
   /* ---------------------------------------------------------------- utils */
   function el(tag, style, text) {
@@ -169,7 +200,10 @@
       .then(function (res) {
         if (res && res.ok) {
           say(input, res.dup ? MSG.dup : MSG.ok, 'ok');
-          if (!res.dup) input.value = '';
+          if (!res.dup) {
+            input.value = '';
+            trackSignup(input.__slot);   /* 신규 등록만 집계 — 중복은 전환이 아님 */
+          }
           if (input.__consent) input.__consent.checked = false;
         } else {
           say(input, MSG.fail, 'error');
@@ -210,6 +244,9 @@
   }
 
   function start() {
+    /* 방문자 분석은 이메일 수집과 독립이므로 항상 먼저 켭니다. */
+    loadAnalytics();
+
     /* 수집 주소가 아직 없으면 아무것도 건드리지 않습니다.
        설정 전까지 사이트는 지금 모습 그대로 보입니다. */
     if (!CONFIG.endpoint) {
