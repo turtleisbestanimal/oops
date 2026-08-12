@@ -51,6 +51,259 @@
   .oops-field__submit:hover .oops-field__arrow { transform: translateX(4px); }
   .oops-sr-only { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
+  /* 데스크톱 구성을 유지하면서 작은 화면에서는 콘텐츠를 한 열로 재배치합니다. */
+  @media (max-width: 900px) {
+    html, body { width: 100%; overflow-x: hidden; }
+
+    [style*="min-width: 1440px"] {
+      min-width: 0 !important;
+      width: 100% !important;
+    }
+
+    [style*="max-width: 1440px"] {
+      max-width: 100% !important;
+      padding-left: 20px !important;
+      padding-right: 20px !important;
+    }
+
+    header > div[style*="height: 60px"] {
+      height: auto !important;
+      min-height: 60px;
+      padding-top: 14px !important;
+      padding-bottom: 12px !important;
+      flex-wrap: wrap;
+      row-gap: 12px;
+    }
+
+    header nav {
+      order: 2;
+      width: 100%;
+      margin-left: 0 !important;
+      padding-bottom: 2px;
+      gap: 22px !important;
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scrollbar-width: none;
+      font-size: 13px !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    header nav::-webkit-scrollbar { display: none; }
+
+    section[style*="height: 682px"] {
+      height: auto !important;
+      min-height: 0 !important;
+      overflow: visible !important;
+    }
+
+    section[style*="height: 682px"] > div[style*="width: 326px"],
+    main[style*="position: relative"] > div[style*="width: 326px"] {
+      display: none !important;
+    }
+
+    [style*="padding: 120px 96px 0"] {
+      padding-top: 64px !important;
+      padding-bottom: 64px !important;
+    }
+
+    [style*="width: 972px"],
+    [style*="width: 843px"],
+    [style*="width: 720px"],
+    [style*="width: 645px"],
+    [style*="width: 620px"],
+    [style*="width: 504px"],
+    [style*="width: 480px"],
+    [style*="width: 457px"],
+    [style*="width: 410.516px"],
+    [style*="width: 378px"],
+    [style*="width: 376px"],
+    [style*="width: 365px"],
+    [style*="width: 350.672px"],
+    [style*="width: 260px"] {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    section h1[style*="font-size: 56px"] {
+      width: 100% !important;
+      font-size: clamp(34px, 9vw, 46px) !important;
+      line-height: 1.22 !important;
+      letter-spacing: -0.035em;
+      overflow-wrap: anywhere;
+    }
+
+    section h1[style*="font-size: 56px"] > span[style*="white-space: nowrap"] {
+      display: inline !important;
+      padding: 0 4px;
+      white-space: normal !important;
+      color: #FFFFFF;
+      background: #29A4FF;
+      border-radius: 7px;
+      -webkit-box-decoration-break: clone;
+      box-decoration-break: clone;
+    }
+
+    section h1[style*="font-size: 56px"] > span > span[aria-hidden="true"] {
+      display: none !important;
+    }
+
+    [style*="display: flex; align-items: flex-start; gap: 72px"],
+    [style*="display: flex; align-items: flex-end; justify-content: space-between; gap: 48px"],
+    [style*="margin-top: 64px; display: flex; align-items: center; justify-content: space-between; gap: 48px"] {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 32px !important;
+    }
+
+    .oops-capture { flex: 1 1 auto; width: 100%; }
+    .oops-capture__note, .oops-capture__status { max-width: 100%; }
+
+    [style*="grid-template-columns: repeat(3, 384px)"],
+    [style*="grid-template-columns: repeat(3, 1fr)"],
+    [style*="grid-template-columns: 480px 672px"],
+    [style*="grid-template-columns: 801.328px 350.672px"],
+    [style*="grid-template-columns: 376.664px 376.664px"],
+    [style*="grid-template-columns: 376px 1fr"],
+    [style*="grid-template-columns: 240px 800px"] {
+      grid-template-columns: minmax(0, 1fr) !important;
+      gap: 32px !important;
+    }
+
+    [style*="grid-template-columns: 480px 672px"] > div[style*="height: 256px"] {
+      height: auto !important;
+      padding: 32px 24px !important;
+    }
+
+    [style*="grid-template-columns: 272px 1fr"] {
+      grid-template-columns: minmax(0, 1fr) !important;
+      height: auto !important;
+      padding: 18px 0;
+      gap: 4px !important;
+    }
+
+    [style*="grid-template-columns: 240px 1fr"] {
+      grid-template-columns: minmax(0, 1fr) !important;
+      gap: 10px !important;
+    }
+
+    [style*="grid-template-columns: 88px 1fr"] {
+      grid-template-columns: 76px minmax(0, 1fr) !important;
+    }
+
+    [style*="grid-template-columns: 1fr 1fr; gap: 1px"] {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    aside[style*="padding-left: 40px"] {
+      padding-top: 32px;
+      padding-left: 0 !important;
+      box-shadow: inset 0 1px 0 0 #E5E5E5 !important;
+    }
+
+    [style*="padding: 46px 40px"] { padding: 40px 20px !important; }
+
+    h2[style*="font-size: 40px"][style*="white-space: nowrap"],
+    h1[style*="white-space: nowrap"] {
+      white-space: normal !important;
+      overflow-wrap: anywhere;
+    }
+
+    main[style*="padding: 56px 96px 96px"] > div:first-child {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 24px !important;
+    }
+
+    main[style*="padding: 56px 96px 96px"] > div:first-child > div:last-child {
+      width: 100%;
+      justify-content: space-between;
+      gap: 16px !important;
+    }
+
+    article > div[style*="align-items: baseline"] { flex-wrap: wrap; }
+
+    .oops-history-head {
+      display: none !important;
+    }
+
+    .oops-history-row {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+      gap: 12px 20px !important;
+      height: auto !important;
+      padding: 20px 0;
+    }
+
+    .oops-history-row > div:first-child {
+      grid-column: 1 / -1;
+      overflow-wrap: anywhere;
+    }
+
+    .oops-history-row > div:nth-child(n+2)::before {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 10px;
+      line-height: 16px;
+      color: #9A9A9A;
+    }
+
+    .oops-history-row > div:nth-child(2)::before { content: "검수일"; }
+    .oops-history-row > div:nth-child(3)::before { content: "검출"; }
+    .oops-history-row > div:nth-child(4)::before { content: "수정함"; }
+    .oops-history-row > div:nth-child(5)::before { content: "상태"; }
+
+    footer[style*="height: 224px"] {
+      height: auto !important;
+    }
+
+    footer > div[style*="grid-template-columns: 245.25px 245.25px 1fr"] {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+      gap: 40px 24px !important;
+      height: auto !important;
+      padding-top: 40px !important;
+      padding-bottom: 40px;
+    }
+
+    footer > div > div[style*="justify-self: end"] {
+      grid-column: 1 / -1;
+      justify-self: stretch !important;
+      text-align: left !important;
+    }
+
+    footer > div > div[style*="justify-self: end"] > div:first-child {
+      justify-content: flex-start !important;
+    }
+
+    sc-if > div[style*="position: fixed"][style*="left: 50%"] {
+      width: calc(100% - 32px);
+      box-sizing: border-box;
+      padding-right: 18px !important;
+      border-radius: 18px !important;
+      flex-wrap: wrap;
+    }
+  }
+
+  @media (max-width: 480px) {
+    [style*="max-width: 1440px"] {
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
+
+    [style*="padding: 120px 96px 0"] { padding-top: 48px !important; }
+    section h1[style*="font-size: 56px"] { font-size: 34px !important; }
+    [style*="font-size: 40px; line-height: 52px"] { font-size: 32px !important; line-height: 42px !important; }
+    [style*="font-size: 40px; line-height: 48px"] { font-size: 32px !important; line-height: 40px !important; }
+
+    [style*="display: flex; gap: 48px; font-size: 15px"] {
+      gap: 20px !important;
+      flex-wrap: wrap;
+    }
+
+    [style*="position: sticky"] > div:last-child {
+      gap: 8px !important;
+      flex-wrap: wrap;
+    }
+  }
+
 </style>
 </helmet>
 
@@ -485,11 +738,11 @@
     <p style="margin: 16px 0 0; font-size: 15px; line-height: 28px; color: #757575">자막 강도 관련 검출이 최근 네 편에서 반복됩니다.</p>
 
     <div style="margin-top: 40px">
-      <div style="display: grid; grid-template-columns: 1fr 140px 120px 120px 140px; gap: 24px; padding: 12px 0; box-shadow: inset 0 -1px 0 0 #111111; font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">
+      <div class="oops-history-head" style="display: grid; grid-template-columns: 1fr 140px 120px 120px 140px; gap: 24px; padding: 12px 0; box-shadow: inset 0 -1px 0 0 #111111; font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">
         <div>파일명</div><div>검수일</div><div>검출</div><div>수정함</div><div>상태</div>
       </div>
       <sc-for list="{{ history }}" as="h" hint-placeholder-count="6">
-        <div onClick="{{ h.open }}" style="display: grid; grid-template-columns: 1fr 140px 120px 120px 140px; gap: 24px; align-items: center; height: 68px; box-shadow: inset 0 -1px 0 0 #E5E5E5; font-size: 15px; line-height: 24px; cursor: pointer; transition: background-color 120ms linear" style-hover="background: #F1F9FF">
+        <div class="oops-history-row" onClick="{{ h.open }}" style="display: grid; grid-template-columns: 1fr 140px 120px 120px 140px; gap: 24px; align-items: center; height: 68px; box-shadow: inset 0 -1px 0 0 #E5E5E5; font-size: 15px; line-height: 24px; cursor: pointer; transition: background-color 120ms linear" style-hover="background: #F1F9FF">
           <div style="font-weight: 500">{{ h.name }}</div>
           <div style="color: #757575; font-variant-numeric: tabular-nums">{{ h.date }}</div>
           <div style="color: #757575">{{ h.found }}</div>
