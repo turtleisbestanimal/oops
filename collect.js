@@ -22,13 +22,20 @@
        재배포로 주소가 바뀌면 여기만 교체하세요. */
     endpoint: 'https://script.google.com/macros/s/AKfycbxX5alvnRJs5WtKmmrEVPcUNvElLiHSzb-wmaqHYaFGEDKN4fkDY5g3RVJUWXqCROmQ/exec',
 
-    /* 개인정보 수집 동의 체크박스를 붙일지 여부.
-       한국에서는 이메일도 개인정보라 수집 목적·보관기간 고지와 동의가
-       필요합니다. 디자인을 원본 그대로 두고 싶으면 false로 바꾸세요. */
-    requireConsent: true,
+    /* 동의를 받는 방식.
+         false — 등록 행위 자체를 동의로 봅니다(현재). 아래 impliedNote를
+                 입력칸 밑에 항상 띄워 수집 목적·보관기간을 고지합니다.
+                 막히는 지점이 없어 대기열 서비스에서 흔히 쓰는 방식입니다.
+         true  — 체크박스로 명시적 동의를 받습니다. 개인정보 측면에서 더
+                 안전하지만, 체크를 빠뜨리면 등록이 막힙니다.
+
+       한국에서는 이메일도 개인정보라 어느 쪽이든 고지 문구는 반드시
+       보여야 합니다. 그래서 두 방식 모두 문구를 띄웁니다. */
+    requireConsent: false,
 
     consentLabel: '오픈 알림 수신에 동의합니다.',
     consentNote: '수집 항목: 이메일 · 목적: 서비스 오픈 알림 · 보관: 발송 후 파기(수신거부 시 즉시 삭제)',
+    impliedNote: '등록하면 오픈 알림 수신에 동의하는 것으로 봅니다. 수집 항목: 이메일 · 목적: 서비스 오픈 알림 · 보관: 발송 후 파기(수신거부 시 즉시 삭제)',
 
     /* 같은 브라우저에서 연속 제출을 막는 최소 간격(ms) */
     throttleMs: 3000,
@@ -157,6 +164,10 @@
 
       extra.appendChild(el('p',
         'margin:0;font-size:12px;line-height:17px;color:' + MUTED, CONFIG.consentNote));
+    } else {
+      /* 체크박스는 없지만 고지는 남습니다 — 이메일은 개인정보입니다. */
+      extra.appendChild(el('p',
+        'margin:0;font-size:12px;line-height:17px;color:' + MUTED, CONFIG.impliedNote));
     }
 
     var status = el('p',
