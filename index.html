@@ -1,980 +1,869 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>OoPs!? — 업로드 전 검수</title>
-<meta name="description" content="편집이 끝난 영상 한 편에서, 업로드 전에 다시 확인할 구간만 찾습니다. 발언과 화면 자막, 화면 속 삽입 이미지를 분석해 검토가 필요한 지점을 타임라인으로 제시합니다.">
-<link rel="icon" href="assets/favicon.png" type="image/png">
-<link rel="apple-touch-icon" href="assets/favicon.png">
+<meta name="description" content="편집이 끝난 영상 한 편에서, 업로드 전에 다시 확인할 구간만 찾습니다.">
+<link rel="icon" href="./assets/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="./assets/favicon.png">
 <meta property="og:title" content="OoPs!? — 업로드 전 검수">
 <meta property="og:description" content="편집이 끝난 영상 한 편에서, 업로드 전에 다시 확인할 구간만 찾습니다.">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#4BB1FD">
-<script>document.documentElement.classList.add('js');</script>
-<style>
-/* ══════════════════════════════════════════════════════════════
-   OoPs!? — 랜딩 페이지
-   Source of truth : 웁스.fig · frame "S-1 · 랜딩" (1440 × 3216)
-
-   이 파일의 모든 색·두께·간격·반경·불투명도는 Figma 실측값입니다.
-   hover 효과도 새로 발명하지 않고, 디자인이 이미 쓰고 있는
-   "상태 문법"에서만 파생했습니다:
-
-     · opacity  0.5 → 1.0        (비활성 nav → 활성 nav)
-     · 규칙선   #E5E5E5 1px → #111111 1px → #111111 2px
-     · 표면     #FFFFFF → #F1F9FF → #EDF7FF
-     · 텍스트   #757575 → #111111
-     · 파랑     #29A4FF → 로고 그라디언트(#4BB1FD→#2A86FA) → #2A86FA
-     · 주의     #9E3500 (검토 필요 지점의 색)
-
-   drop shadow는 한 개도 없습니다 — 원본에 0개이기 때문입니다.
-   ══════════════════════════════════════════════════════════════ */
-
-:root{
-  /* ── 색 ─────────────────────────────────────────────────── */
-  --oops-ink:          #111111;   /* 본문·제목·강조 규칙선        */
-  --oops-muted:        #757575;   /* 보조 텍스트 (흰 배경 4.61:1) */
-  --oops-muted-tint:   #6E6E6E;   /* 파랑/회색 지면 위 보조 텍스트.
-                                     #757575는 #EDF7FF 위에서 4.25:1로
-                                     AA에 미달해 한 단계만 어둡게 잡았습니다. */
-  --oops-white:        #FFFFFF;
-  --oops-black:        #000000;   /* 이메일 칸 테두리, 히어로 선  */
-  --oops-hair:         #E5E5E5;   /* 1px 규칙선 (34회)            */
-  --oops-accent:       #9E3500;   /* "다시 볼 곳"                 */
-  --oops-brand:        #4BB1FD;   /* 히어로 블록 · 푸터 지면      */
-  --oops-primary:      #29A4FF;   /* Button fill — 파일에 단 하나 */
-  --oops-primary-dark: #2A86FA;   /* 그라디언트 어두운 끝         */
-  --oops-tint-1:       #F1F9FF;   /* "선택됨" 표면                */
-  --oops-tint-2:       #EDF7FF;   /* 섹션 지면                    */
-  --oops-warm:         #F6F4F4;   /* 비교 카드 지면               */
-  --oops-gradient: linear-gradient(90deg, #4BB1FD 0%, #2A86FA 100%);
-
-  /* ── 타입 ───────────────────────────────────────────────── */
-  --oops-font: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Apple SD Gothic Neo",
-               Pretendard, "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif;
-
-  /* ── 격자 ───────────────────────────────────────────────── */
-  --oops-page:      1440px;
-  --oops-gutter:      96px;   /* 본문 여백 (1440 − 1248) / 2 */
-  --oops-gutter-hd:   48px;   /* 헤더 · 푸터 여백            */
-  --oops-band:        96px;   /* 섹션 상하 패딩              */
-  --oops-hero-top:   120px;
-
-  /* ── 시간 : 격자 숫자 × 30ms ────────────────────────────── */
-  --oops-t-press:    90ms;   /* 누름               */
-  --oops-t-tint:    120ms;   /* 색 · 불투명도 (4)  */
-  --oops-t-rule:    180ms;   /* 선이 그어짐 (6)    */
-  --oops-t-surface: 240ms;   /* 넓은 면 (8)        */
-  --oops-t-reveal:  360ms;   /* 등장 (12)          */
-
-  /* ── 이징 : 오버슈트 금지 (1px 규칙선은 튕기지 않는다) ──── */
-  --oops-ease-out:  cubic-bezier(.22,.61,.36,1);
-  --oops-ease-in:   cubic-bezier(.55,.09,.68,.53);
-  --oops-ease-rule: cubic-bezier(.20,.90,.30,1);
-  --oops-ease-loop: cubic-bezier(.45,0,.55,1);
-
-  /* ── 거리 · 비율 ────────────────────────────────────────── */
-  --oops-nudge:        4px;    /* nav padding-bottom = 파일 최소 간격 */
-  --oops-rise:         8px;    /* 타임라인 마커 한 변                 */
-  --oops-dot-scale:    1.25;   /* 8px 마커 → 10px 마커 (S-4 실재)     */
-  --oops-press-op:     .6;     /* 목업 패널 op=0.6                    */
-  --oops-idle-op:      .5;     /* 파일의 "비활성" 불투명도 — 진행 중 dot 펄스의 바닥값 */
-
-  /* ── 포커스 : 파일의 2px 활성 두께를 재사용 ─────────────── */
-  --oops-focus-w:      2px;
-  --oops-focus-color:  #111111;
-  --oops-focus-offset: 2px;
-}
-
-/* ══════════════════════════ RESET ══════════════════════════ */
-*,*::before,*::after{ box-sizing:border-box }
-html{ -webkit-text-size-adjust:100% }
-body{
-  margin:0;
-  background:var(--oops-white);
-  color:var(--oops-ink);
-  font-family:var(--oops-font);
-  font-size:15px; line-height:1.6;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  word-break:keep-all;              /* 한국어: 어절 중간에서 끊지 않음 */
-  overflow-wrap:break-word;
-}
-h1,h2,h3,p,figure,blockquote{ margin:0 }
-ul{ margin:0; padding:0; list-style:none }
-a{ color:inherit; text-decoration:none }
-img{ max-width:100%; display:block }
-button,input{ font:inherit; color:inherit }
-button{ background:none; border:0; padding:0; cursor:pointer }
-
-:focus{ outline:none }
-:where(a,button,input,[tabindex]):focus-visible{
-  outline:var(--oops-focus-w) solid var(--oops-focus-color);
-  outline-offset:var(--oops-focus-offset);
-}
-
-.oops-skip{
-  position:absolute; left:-9999px; top:0; z-index:100;
-  padding:12px 20px; background:var(--oops-ink); color:var(--oops-white);
-  font-size:14px; font-weight:500;
-}
-.oops-skip:focus{ left:0 }
-
-.oops-wrap{
-  max-width:var(--oops-page); margin-inline:auto;
-  padding-inline:var(--oops-gutter);
-}
-
-/* ══════════════════════ TYPE SCALE ══════════════════════════
-   Figma 텍스트 노드에서 1:1로 옮긴 값                          */
-.t-display{ font-size:clamp(30px,3.9vw,56px); line-height:1.18; font-weight:500; letter-spacing:-.012em }
-.t-h1     { font-size:clamp(26px,2.8vw,40px); line-height:1.3;  font-weight:500; letter-spacing:-.006em }
-.t-h2     { font-size:clamp(21px,1.9vw,27px); line-height:1.33; font-weight:500; letter-spacing:.196px }
-.t-lead   { font-size:16px; line-height:28px; font-weight:300; color:var(--oops-muted) }
-.t-body   { font-size:16px; line-height:28px; color:var(--oops-muted) }
-.t-body-s { font-size:15px; line-height:28px; color:var(--oops-muted) }
-.t-body-xs{ font-size:14px; line-height:28px; color:var(--oops-muted) }
-.t-caption{ font-size:12px; line-height:20px; color:var(--oops-muted) }
-.justify  { text-align:justify }
-
-.oops-band{ padding-block:var(--oops-band) }
-/* 유색 지면 위에서는 보조 텍스트를 한 단계 어둡게 (AA 확보) */
-.oops-band--tint{ background:var(--oops-tint-2); --oops-muted:var(--oops-muted-tint) }
-
-/* ══════════════════════════ HEADER ══════════════════════════
-   1440×60 · 하단 1px #E5E5E5 · 여백 48 (본문 96과 다름, 원본 그대로) */
-.oops-header{
-  position:sticky; top:0; z-index:50;
-  height:60px; background:var(--oops-white);
-  box-shadow:inset 0 -1px 0 var(--oops-hair);
-}
-.oops-header__inner{
-  max-width:var(--oops-page); margin-inline:auto;
-  padding-inline:var(--oops-gutter-hd);
-  height:100%; display:flex; align-items:center; justify-content:space-between; gap:40px;
-}
-
-/* ── 브랜드 락업 : 마크 + 그라디언트 워드마크 ───────────── */
-.oops-brand{ display:inline-flex; align-items:center; gap:10px }
-.oops-brand__mark{
-  width:auto; height:26px; transform-origin:60% 70%;
-  transition:transform var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-logo{
-  font-size:32px; line-height:1; font-weight:700; letter-spacing:-.055em;
-  background-image:var(--oops-gradient);
-  background-size:200% 100%; background-position:0% 50%;
-  -webkit-background-clip:text; background-clip:text;
-  color:transparent; -webkit-text-fill-color:transparent;
-  transition:background-position var(--oops-t-tint) var(--oops-ease-in);
-}
-
-/* ── nav : 활성 = 2px 먹 밑줄 + op 1.0 ───────────────────── */
-.oops-brand{ flex:0 0 auto }
-.oops-nav{ display:flex; align-items:center; gap:28px; min-width:0 }
-.oops-nav__item{
-  position:relative; display:block; white-space:nowrap;
-  height:32px; padding-bottom:4px;
-  font-size:15px; line-height:24px; font-weight:500;
-  /* 원본은 비활성 nav를 먹 + opacity .5로 표현하지만 그 값은 흰 배경에서
-     3.54:1로 AA에 미달합니다. 같은 밝기를 파일의 보조색 #757575(4.61:1)로
-     대체해 대비를 확보하고, hover는 파일 자신의 텍스트 승급
-     (#757575 → #111111) 축을 그대로 탑니다. */
-  color:var(--oops-muted);
-  transition:color var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-nav__item::after{
-  content:""; position:absolute; left:0; right:0; bottom:0;
-  height:2px; background:var(--oops-ink);
-  transform:scaleX(0); transform-origin:left center;
-  transition:transform var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-nav__item[aria-current="page"]{ color:var(--oops-ink) }
-.oops-nav__item[aria-current="page"]::after{ transform:scaleX(1) }
-
-/* ══════════════════════════ HERO ══════════════════════════
-   Section 높이 682 · 파란 블록 326×682가 오른쪽 끝에 붙는다   */
-.oops-hero{ position:relative; min-height:682px }
-.oops-hero__inner{
-  max-width:var(--oops-page); margin-inline:auto;
-  padding-inline:var(--oops-gutter);
-  padding-block:var(--oops-hero-top) 24px;
-  position:relative; z-index:1;
-}
-.oops-hero__col{ max-width:990px }
-
-/* ── eyebrow + 미니 타임라인 (Line 2 + 8px 마커 3개) ─────── */
-.oops-eyebrow-row{ display:flex; align-items:center; gap:24px }
-.oops-eyebrow{ font-size:clamp(16px,1.5vw,22px); line-height:1.4; font-weight:500; white-space:nowrap }
-.oops-timeline{ position:relative; flex:1 1 462px; max-width:462px; height:8px; min-width:140px }
-.oops-timeline__rule{
-  position:absolute; left:0; right:0; top:50%; height:1px;
-  background:var(--oops-black); transform-origin:left center;
-}
-.oops-tick{
-  position:absolute; top:0; width:8px; height:8px;   /* 원본은 정사각형 (radius 0) */
-  background:var(--oops-ink); transform-origin:center;
-  transition:transform var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-tick--caption{ background:var(--oops-accent) }
-
-.oops-hero__title{ margin-top:20px }
-.oops-hero__lead { margin-top:24px; max-width:645px }
-
-.oops-hero__row{ margin-top:56px; display:flex; align-items:flex-start; gap:72px; flex-wrap:wrap }
-
-/* ── 이메일 캡처 : 378×74 · 1px #000000 · r10 ─────────────── */
-/* collect.js가 고지·상태 문구를 채워 넣는 자리입니다. 자리를 페이지가
-   미리 잡아 두면 스크립트가 레이아웃을 건드릴 일이 없습니다. */
-.oops-capture{
-  flex:0 0 378px; max-width:100%;
-  display:flex; flex-direction:column; gap:10px;
-}
-.oops-capture__note{
-  margin:0; font-size:12px; line-height:17px; color:var(--oops-muted);
-}
-.oops-capture__status{
-  margin:0; min-height:20px;
-  font-size:14px; line-height:20px; font-weight:500; color:var(--oops-muted);
-}
-.oops-capture__status[data-tone="ok"]   { color:var(--oops-ink) }
-.oops-capture__status[data-tone="error"]{ color:var(--oops-accent) }
-
-.oops-field{
-  position:relative;
-  flex:none; width:100%; height:74px;
-  border:1px solid var(--oops-black); border-radius:10px;
-  background:var(--oops-white);
-  display:flex; align-items:center;
-  transition:background-color var(--oops-t-tint) var(--oops-ease-in),
-             box-shadow      var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-field__input{
-  flex:1 1 auto; min-width:0; height:100%;
-  padding:0 68px 0 22px;
-  border:0; background:transparent; border-radius:inherit;
-  font-size:15px; line-height:24px; font-weight:500; color:var(--oops-ink);
-}
-.oops-field__input::placeholder{ color:var(--oops-ink); opacity:1 }
-.oops-field__submit{
-  position:absolute; right:10px; top:50%;
-  width:52px; height:52px; margin-top:-26px;
-  border-radius:8px;
-  display:grid; place-items:center;
-  color:var(--oops-black); background:transparent;
-  transition:background-color var(--oops-t-tint) var(--oops-ease-in),
-             color            var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-field__submit svg{ width:19px; height:16px; display:block }  /* Figma VECTOR 19×16 */
-.oops-field__arrow{
-  transform:translateX(0);
-  transition:transform var(--oops-t-tint) var(--oops-ease-in);
-}
-
-/* ── 목업 진행 패널 : 504 폭 · 42px 행 5개 · op 0.6 ──────── */
-.oops-mock{
-  flex:1 1 504px; max-width:504px;
-  opacity:var(--oops-press-op); user-select:none;
-  transition:opacity var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-mock__row{
-  height:42px; display:flex; align-items:center;
-  background:var(--oops-white);
-  box-shadow:inset 0 -1px 0 var(--oops-hair);
-  transition:background-color var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-mock__dot{ flex:0 0 6px; width:6px; height:6px; border-radius:70px; background:var(--oops-hair) }
-.oops-mock__name{ flex:1 1 auto; margin-left:22px; font-size:10.5px; line-height:16.8px; color:var(--oops-muted) }
-.oops-mock__state{ font-size:8.4px; line-height:14px; color:var(--oops-muted) }
-.oops-mock__row--done .oops-mock__dot { background:var(--oops-ink) }
-.oops-mock__row--done .oops-mock__name{ color:var(--oops-ink) }
-.oops-mock__row--live .oops-mock__dot { background:var(--oops-accent) }
-.oops-mock__row--live .oops-mock__name{ color:var(--oops-ink); font-weight:500 }
-
-/* ── 파란 블록 : 326×682, 글자는 양쪽으로 잘려 나간다 ────── */
-.oops-hero__panel{
-  position:absolute; top:0; right:0; bottom:0; z-index:0;
-  width:326px; background:var(--oops-brand);
-  overflow:hidden;
-}
-.oops-hero__letters{
-  position:absolute; inset:0;
-  font-size:128px; line-height:1; font-weight:700;
-  color:var(--oops-white); letter-spacing:-.02em;
-}
-.oops-hero__letters span{ position:absolute; display:block }
-.oops-hero__letters .l-oo{ left:-7px;  top:288px }
-.oops-hero__letters .l-ps{ left:179px; top:363px }
-
-/* ═════════════ S2 · 혼자 만든 영상은 혼자 볼 수 없습니다 ═════ */
-.oops-why__body{ margin-top:24px; max-width:843px }
-
-/* ═════════════ S3 · 세 가지를 봅니다 (상단 1px 먹 규칙선) ═══ */
-.oops-cards{ margin-top:56px; display:grid; grid-template-columns:repeat(3,1fr); gap:48px }
-.oops-card{
-  position:relative; padding-top:24px; min-height:116px;
-  background:var(--oops-white);
-  box-shadow:inset 0 1px 0 var(--oops-ink);
-  transition:background-color var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-card::before{                     /* 1px → 2px 승급 레이어 */
-  content:""; position:absolute; left:0; right:0; top:0; height:2px;
-  background:var(--oops-ink);
-  transform:scaleY(0); transform-origin:top center;
-  transition:transform var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-card__title{ font-size:15px; line-height:24px; font-weight:500 }
-.oops-card__body { margin-top:24px; transition:color var(--oops-t-tint) var(--oops-ease-in) }
-
-/* ═════════════ S4 · 발언과 자막을 나란히 놓고 봅니다 ═══════ */
-.oops-split{
-  display:grid; grid-template-columns:480px 1fr; gap:96px;
-  box-shadow:inset 0 1px 0 var(--oops-hair);
-  padding-top:56px;
-}
-.oops-rulelabel{ display:flex; align-items:center; gap:16px }
-.oops-rulelabel__text{ font-size:16px; line-height:20px; color:var(--oops-accent); white-space:nowrap }
-.oops-rulelabel__rule{
-  flex:1 1 auto; max-width:317px; height:1px;
-  background:var(--oops-accent); transform-origin:left center;
-}
-.oops-split__title{ margin-top:16px }
-.oops-split__text { margin-top:20px }
-
-.oops-compare{
-  background:var(--oops-warm); border-radius:10px; padding:48px;
-  --oops-muted:var(--oops-muted-tint);
-}
-.oops-compare__grid{ display:grid; grid-template-columns:88px 1fr; gap:20px 24px; align-items:baseline }
-.oops-compare__key{
-  font-size:15px; line-height:28px; color:var(--oops-muted);
-  transition:color var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-compare__val{ font-size:15px; line-height:28px; color:var(--oops-ink) }
-.oops-compare__val--loud{ font-weight:500 }
-.oops-compare__note{
-  margin-top:28px; padding:20px 8px 16px;
-  background:var(--oops-white);
-  box-shadow:inset 0 1px 0 var(--oops-hair);
-  font-size:14px; line-height:28px; color:var(--oops-muted);
-  transition:box-shadow var(--oops-t-tint) var(--oops-ease-in);
-}
-
-/* ═════════════ S5 · OoPs?!가 하지 않는 것 ═══════════════════ */
-.oops-split--flat{ box-shadow:none; padding-top:0 }
-.oops-nots{ align-self:start }
-.oops-not{
-  position:relative; min-height:68px; padding:20px 0;
-  background:var(--oops-white);
-  box-shadow:inset 0 -1px 0 var(--oops-hair);
-}
-.oops-not:last-child{ background:transparent; box-shadow:none }   /* 4행은 지면이 비친다 */
-.oops-not::before{
-  content:""; position:absolute; left:0; top:0; bottom:0; width:2px;
-  background:var(--oops-ink);
-  transform:scaleY(0); transform-origin:top center;
-  transition:transform var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-not__inner{
-  display:grid; grid-template-columns:240px 1fr; gap:32px;
-  transform:translateX(0);
-  transition:transform var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-not__label{ font-size:15px; line-height:28px; font-weight:500 }
-.oops-not__text {
-  font-size:15px; line-height:28px; color:var(--oops-muted);
-  transition:color var(--oops-t-tint) var(--oops-ease-in);
-}
-
-/* ═════════════ S6 · 근거 수준 (1px #E5E5E5 그리드가 비친다) ═ */
-.oops-grid{ margin-top:40px; display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--oops-hair) }
-.oops-grid__cell{
-  position:relative; padding:32px; min-height:126px;
-  background:var(--oops-white);
-  box-shadow:inset 0 0 0 0 transparent;
-  transition:box-shadow       var(--oops-t-tint) var(--oops-ease-in),
-             background-color var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-grid__title{ font-size:16px; line-height:24px; font-weight:500 }
-.oops-grid__text {
-  margin-top:10px; font-size:15px; line-height:28px; color:var(--oops-muted);
-  transition:color var(--oops-t-tint) var(--oops-ease-in);
-}
-
-/* ═════════════ S7 · CTA (상단 1px 먹 규칙선) ════════════════ */
-.oops-cta{
-  box-shadow:inset 0 1px 0 var(--oops-ink);
-  padding-top:56px;
-  display:flex; align-items:flex-end; justify-content:space-between; gap:48px;
-}
-.oops-cta__copy{ max-width:566px }
-.oops-cta__text{ margin-top:20px }
-
-/* ══════════════════════════ FOOTER ══════════════════════════ */
-.oops-footer{
-  background:var(--oops-brand); color:var(--oops-white);
-  padding-block:48px 40px;
-  /* 파랑 지면 위 포커스 링은 흰색이 2.33:1로 표시자 최소 대비(3:1)에
-     못 미칩니다. 먹(#111111)은 같은 지면에서 8.08:1입니다. */
-  --oops-focus-color:#111111;
-}
-.oops-footer__inner{
-  max-width:var(--oops-page); margin-inline:auto;
-  padding-inline:var(--oops-gutter);
-  display:grid; grid-template-columns:245px 245px 1fr; gap:0;
-  align-items:start;
-}
-.oops-fcol__title{ font-size:16px; line-height:20px; font-weight:700; margin-bottom:12px }
-.oops-fcol__list { display:flex; flex-direction:column; gap:12px; align-items:flex-start }
-.oops-flink{
-  position:relative; display:inline-block;
-  font-size:15px; line-height:24px; font-weight:500;
-  transition:opacity var(--oops-t-press) var(--oops-ease-out);
-}
-.oops-flink::after{
-  content:""; position:absolute; left:0; right:0; bottom:-2px; height:1px;
-  background:currentColor;
-  transform:scaleX(0); transform-origin:left center;
-  transition:transform var(--oops-t-tint) var(--oops-ease-in);
-}
-.oops-fend{ display:flex; flex-direction:column; align-items:flex-end; text-align:right }
-.oops-fend .oops-logo{
-  background-image:none; color:var(--oops-white); -webkit-text-fill-color:var(--oops-white);
-}
-.oops-fend__note { margin-top:12px; font-size:12px; line-height:20px; max-width:434px }
-.oops-fend__legal{
-  margin-top:36px; text-align:left;
-  font-size:10px; line-height:15px; font-weight:100; white-space:pre-line;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   HOVER — 모든 :hover는 마우스가 있는 기기에서만.
-   터치 기기에서 hover가 눌린 채 남는 문제를 원천 차단합니다.
-   ══════════════════════════════════════════════════════════════ */
-@media (hover:hover) and (pointer:fine){
-
-  /* nav : 불투명도 + 2px 먹 밑줄이 좌→우로 그어짐 */
-  .oops-nav__item:hover{ color:var(--oops-ink); transition-timing-function:var(--oops-ease-out) }
-  .oops-nav__item:hover::after,
-  .oops-nav__item:focus-visible::after{
-    transform:scaleX(1);
-    transition:transform var(--oops-t-rule) var(--oops-ease-rule);
-  }
-
-  /* 로고 : 새 색을 넣지 않고 기존 그라디언트를 흘려보낸다 */
-  .oops-brand:hover .oops-logo{
-    background-position:100% 50%;
-    transition:background-position var(--oops-t-rule) var(--oops-ease-out);
-  }
-  .oops-brand:hover .oops-brand__mark{
-    transform:rotate(-7deg);
-    transition:transform var(--oops-t-rule) var(--oops-ease-out);
-  }
-
-  /* 이메일 칸 : 표면이 파일의 "선택됨" 색으로 씻긴다 */
-  .oops-field:hover{
-    background-color:var(--oops-tint-1);
-    transition-timing-function:var(--oops-ease-out);
-  }
-  .oops-field:hover .oops-field__arrow{
-    transform:translateX(var(--oops-nudge));
-    transition:transform var(--oops-t-rule) var(--oops-ease-out);
-  }
-  /* ★ 제출 버튼 — 요청하신 "버튼 색이 바뀌는" 지점.
-     파일에 존재하는 단 하나의 버튼 색(#29A4FF)을 그대로 입습니다. */
-  .oops-field__submit:hover{
-    background-color:var(--oops-primary);
-    color:var(--oops-white);
-    transition-timing-function:var(--oops-ease-out);
-  }
-
-  /* 세 장의 카드 : 상단 규칙선 1px → 2px, 표면·본문 승급 */
-  .oops-card:hover{
-    background-color:var(--oops-tint-1);
-    transition-duration:var(--oops-t-surface);
-    transition-timing-function:var(--oops-ease-out);
-  }
-  .oops-card:hover::before,
-  .oops-card:focus-visible::before{
-    transform:scaleY(1);
-    transition:transform var(--oops-t-rule) var(--oops-ease-rule);
-  }
-  .oops-card:hover .oops-card__body{ color:var(--oops-ink); transition-timing-function:var(--oops-ease-out) }
-
-  /* 비교 카드 : 자막 쪽이 "다시 볼 곳"의 색으로 물든다 */
-  .oops-compare:hover .oops-compare__note{
-    box-shadow:inset 0 1px 0 var(--oops-accent);
-    transition-timing-function:var(--oops-ease-out);
-  }
-  .oops-compare:hover .oops-compare__key--caption{
-    color:var(--oops-accent); transition-timing-function:var(--oops-ease-out);
-  }
-
-  /* 하지 않는 것 : 지면이 이미 파랑이라 워시 대신 좌측 규칙선 */
-  .oops-not:hover::before{
-    transform:scaleY(1);
-    transition:transform var(--oops-t-rule) var(--oops-ease-rule);
-  }
-  .oops-not:hover .oops-not__inner{
-    transform:translateX(var(--oops-nudge));
-    transition:transform var(--oops-t-rule) var(--oops-ease-out);
-  }
-  .oops-not:hover .oops-not__text{ color:var(--oops-ink); transition-timing-function:var(--oops-ease-out) }
-
-  /* 근거 수준 : 회색 그리드선이 자기 칸 주변에서만 먹이 된다 */
-  .oops-grid__cell:hover{
-    z-index:1;
-    box-shadow:inset 0 0 0 1px var(--oops-ink);
-    transition-duration:var(--oops-t-rule);
-    transition-timing-function:var(--oops-ease-out);
-  }
-  .oops-grid__cell:hover .oops-grid__text{ color:var(--oops-ink) }
-
-  /* 목업 패널 : 파일 자신의 불투명도 축을 그대로 탄다 */
-  .oops-mock:hover{ opacity:1; transition-duration:var(--oops-t-surface); transition-timing-function:var(--oops-ease-out) }
-  .oops-mock__row:hover{ background-color:var(--oops-tint-1); transition-timing-function:var(--oops-ease-out) }
-
-  /* 타임라인 마커 : 8px → 10px, 파일에 실재하는 두 크기 사이 */
-  .oops-timeline:hover .oops-tick{
-    transform:scale(var(--oops-dot-scale));
-    transition:transform var(--oops-t-rule) var(--oops-ease-out);
-  }
-
-  /* 푸터 링크 : 흰 1px 밑줄. 평상시를 흐리게 만들지 않는다 */
-  .oops-flink:hover::after{
-    transform:scaleX(1);
-    transition:transform var(--oops-t-rule) var(--oops-ease-rule);
-  }
-}
-
-/* ── 포커스 / 누름 : 마우스 유무와 무관하게 항상 ─────────── */
-.oops-field:focus-within{
-  background-color:var(--oops-white);
-  box-shadow:inset 0 0 0 1px var(--oops-black);   /* 1px 테두리 + 1px = 실질 2px */
-  transition-timing-function:var(--oops-ease-out);
-}
-.oops-field:focus-within .oops-field__submit{ background-color:var(--oops-primary); color:var(--oops-white) }
-.oops-flink:focus-visible::after,
-.oops-nav__item:focus-visible::after{ transform:scaleX(1) }
-.oops-nav__item:active{ opacity:var(--oops-press-op); transition-duration:var(--oops-t-press) }
-.oops-field__submit:active{ background-color:var(--oops-primary-dark); transition-duration:var(--oops-t-press) }
-.oops-card:active     { background-color:var(--oops-tint-2); transition-duration:var(--oops-t-press) }
-.oops-grid__cell:active{ background-color:var(--oops-tint-1); transition-duration:var(--oops-t-press) }
-.oops-not:active .oops-not__inner{ transform:translateX(2px); transition-duration:var(--oops-t-press) }
-.oops-flink:active    { opacity:var(--oops-press-op) }
-.oops-card:focus-visible,
-.oops-grid__cell:focus-visible,
-.oops-compare:focus-visible{ outline:var(--oops-focus-w) solid var(--oops-focus-color); outline-offset:-2px }
-
-/* ══════════════════════════ AMBIENT ══════════════════════════
-   페이지 전체에서 루프는 단 하나 — "진행 중" dot.
-   0.5는 임의값이 아니라 파일의 비활성 불투명도입니다.        */
-@keyframes oops-pulse{ 0%,100%{ opacity:1 } 50%{ opacity:var(--oops-idle-op) } }
-.oops-pulse{ animation:oops-pulse 1600ms var(--oops-ease-loop) infinite }
-.oops-pulse[data-paused="true"]{ animation-play-state:paused }
-
-/* ══════════════════════════ REVEAL ═══════════════════════════
-   편집 디자인은 종이에서 왔고, 종이는 날아오지 않습니다.
-   8px 상승 + 페이드, 1회만.                                    */
-.js [data-reveal]{
-  opacity:0; transform:translateY(var(--oops-rise));
-  transition:opacity   var(--oops-t-reveal) var(--oops-ease-out),
-             transform var(--oops-t-reveal) var(--oops-ease-out);
-  transition-delay:var(--d,0ms);
-}
-.js [data-reveal].is-in{ opacity:1; transform:none }
-.js [data-rule-draw]{ transform:scaleX(0) }
-.js [data-rule-draw].is-in{
-  transform:scaleX(1);
-  transition:transform var(--oops-t-reveal) var(--oops-ease-rule) 120ms;
-}
-
-/* ══════════════════════ RESPONSIVE ══════════════════════════ */
-@media (max-width:1279px){
-  :root{ --oops-gutter:56px; --oops-gutter-hd:32px; --oops-hero-top:88px }
-  .oops-hero__panel{ width:max(232px,18vw) }
-  .oops-hero__letters{ font-size:96px }
-  .oops-hero__letters .l-oo{ top:280px }
-  .oops-hero__letters .l-ps{ left:132px; top:344px }
-  .oops-hero__col{ max-width:none; padding-right:calc(max(232px,18vw) + 48px) }
-  .oops-hero__row{ gap:48px }
-  .oops-mock{ flex:1 1 100% }
-  .oops-nav{ gap:24px }
-}
-
-@media (max-width:1023px){
-  :root{ --oops-band:72px }
-  .oops-split{ grid-template-columns:1fr; gap:48px }
-  .oops-cards{ gap:32px }
-}
-
-@media (max-width:860px){
-  :root{ --oops-gutter:32px; --oops-gutter-hd:32px; --oops-band:56px; --oops-hero-top:64px }
-  .oops-hero{ min-height:0; display:flex; flex-direction:column }
-  .oops-hero__col{ padding-right:0 }
-  .oops-hero__inner{ padding-bottom:48px; order:1 }
-  /* 파란 블록이 히어로 행에서 빠져 나와 본문 아래 전폭 띠가 된다 */
-  .oops-hero__panel{ position:relative; width:100%; height:200px; order:2 }
-  .oops-hero__letters{ font-size:88px; display:flex; align-items:center; justify-content:center }
-  .oops-hero__letters span{ position:static }
-  .oops-hero__letters .l-oo,
-  .oops-hero__letters .l-ps{ left:auto; top:auto }
-  .oops-cards,.oops-grid{ grid-template-columns:1fr }
-  .oops-cta{ flex-direction:column; align-items:flex-start; gap:32px }
-  .oops-footer__inner{ grid-template-columns:1fr 1fr; gap:32px }
-  .oops-fend{ grid-column:1 / -1; align-items:flex-start; text-align:left }
-  .oops-fend__legal{ margin-top:20px }
-  .oops-nav{ gap:20px }
-  .oops-nav__item{ font-size:14px }
-  .justify{ text-align:left }
-  .br-lg{ display:none }
-}
-
-@media (max-width:560px){
-  :root{ --oops-gutter:20px; --oops-gutter-hd:20px; --oops-band:44px; --oops-hero-top:48px }
-  .oops-capture{ flex:1 1 100%; max-width:378px }
-  .oops-field{ height:64px }
-  .oops-hero__row{ gap:40px; margin-top:40px }
-  .oops-not__inner{ grid-template-columns:1fr; gap:4px }
-  .oops-compare{ padding:28px }
-  .oops-compare__grid{ grid-template-columns:1fr; gap:2px 0 }
-  .oops-compare__key{ font-size:13px; line-height:22px }
-  .oops-header__inner{ gap:10px; padding-inline:16px }
-  .oops-brand__mark{ height:20px }
-  .oops-brand{ gap:6px }
-  .oops-logo{ font-size:22px }
-  /* nav는 줄바꿈 없이 한 줄 유지 — 넘치면 가로 스크롤 (오버레이 메뉴는
-     이 평면 편집디자인에 없는 문법이라 쓰지 않습니다) */
-  .oops-nav{ gap:12px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none }
-  .oops-nav::-webkit-scrollbar{ display:none }
-  .oops-nav__item{ font-size:13px }
-  .oops-hero__panel{ height:132px }
-  .oops-hero__letters{ font-size:64px }
-  .oops-footer__inner{ grid-template-columns:1fr }
-  .oops-timeline{ min-width:90px }
-}
-
-/* ══════════════════ REDUCED MOTION ═══════════════════════════
-   이동은 0으로, 색은 유지. 색 변화는 전정기관을 자극하지 않고,
-   없애면 "누를 수 있음"이라는 정보까지 사라집니다.             */
-@media (prefers-reduced-motion:reduce){
-  :root{
-    --oops-nudge:0px; --oops-rise:0px; --oops-dot-scale:1;
-    --oops-t-reveal:1ms; --oops-t-surface:80ms; --oops-t-rule:80ms; --oops-t-tint:80ms;
-  }
-  .oops-pulse{ animation:none; opacity:1 }
-  .js [data-reveal]{ opacity:1; transform:none }
-  .js [data-rule-draw]{ transform:scaleX(1) }
-  .oops-brand:hover .oops-brand__mark{ transform:none }
-}
-</style>
+<script src="./preview/support.js"></script>
 </head>
 <body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="preview/_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/fonts.css">
+<link rel="stylesheet" href="preview/_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/colors.css">
+<link rel="stylesheet" href="preview/_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/typography.css">
+<link rel="stylesheet" href="preview/_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/spacing.css">
+<link rel="stylesheet" href="preview/_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/radii.css">
+<link rel="stylesheet" href="preview/_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/elevation.css">
+<link rel="stylesheet" href="preview/_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/layout.css">
+<link rel="stylesheet" href="preview/_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/tokens/base.css">
+<link rel="stylesheet" href="preview/_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/styles.css">
+<script src="preview/_ds/stride-storefront-design-system-1c36c27c-83f5-4419-93c7-0900c040a840/_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: #FFFFFF; }
+  a { color: #2A86FA; text-decoration: none; }
+  a:hover { color: #2A86FA; text-decoration: underline; }
+  @keyframes oops-wipe { from { width: 0 } to { width: calc(100% + 12px) } }
+  @keyframes oops-pulse { 0% { box-shadow: 0 0 0 0 rgba(41,164,255,0.35) } 70% { box-shadow: 0 0 0 7px rgba(41,164,255,0) } 100% { box-shadow: 0 0 0 0 rgba(41,164,255,0) } }
+  @keyframes oops-toast { 0% { opacity: 0; transform: translate(-50%, -18px) scale(0.96) } 55% { opacity: 1; transform: translate(-50%, 5px) scale(1.02) } 100% { opacity: 1; transform: translate(-50%, 0) scale(1) } }
+  /* 이메일 수집 영역은 기존 저장소 디자인과 동작을 유지합니다. */
+  .oops-capture { flex: 0 0 378px; max-width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .oops-capture__note { margin: 0; max-width: 378px; font-size: 12px; line-height: 17px; color: #757575; }
+  .oops-capture__status { margin: 0; min-height: 20px; max-width: 378px; font-size: 14px; line-height: 20px; font-weight: 500; color: #757575; }
+  .oops-capture__status[data-tone="ok"] { color: #111111; }
+  .oops-capture__status[data-tone="error"] { color: #9E3500; }
+  .oops-field { position: relative; width: 378px; max-width: 100%; height: 74px; border: 1px solid #000000; border-radius: 10px; background: #FFFFFF; display: flex; align-items: center; box-sizing: border-box; transition: background-color 120ms linear, box-shadow 120ms linear; }
+  .oops-field:focus-within, .oops-field:hover { background: #F1F9FF; box-shadow: inset 0 0 0 1px #29A4FF; }
+  .oops-field__input { flex: 1 1 auto; min-width: 0; height: 100%; padding: 0 68px 0 22px; border: 0; outline: 0; background: transparent; border-radius: inherit; font-family: inherit; font-size: 15px; line-height: 24px; font-weight: 500; color: #111111; box-sizing: border-box; }
+  .oops-field__input::placeholder { color: #111111; opacity: 1; }
+  .oops-field__submit { position: absolute; right: 10px; top: 50%; width: 52px; height: 52px; margin-top: -26px; padding: 0; border: 0; border-radius: 8px; display: grid; place-items: center; color: #000000; background: transparent; cursor: pointer; transition: background-color 120ms linear, color 120ms linear; }
+  .oops-field__submit:hover { color: #FFFFFF; background: #29A4FF; }
+  .oops-field__submit:focus-visible { outline: 2px solid #111111; outline-offset: 2px; }
+  .oops-field__submit svg { width: 19px; height: 16px; display: block; }
+  .oops-field__arrow { transition: transform 120ms linear; }
+  .oops-field__submit:hover .oops-field__arrow { transform: translateX(4px); }
+  .oops-sr-only { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 
-<a class="oops-skip" href="#main">본문으로 건너뛰기</a>
+</style>
+</helmet>
 
-<!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
-<header class="oops-header">
-  <div class="oops-header__inner">
-    <a class="oops-brand" href="#" aria-label="OoPs!? 홈">
-      <img class="oops-brand__mark" src="assets/oops-mark.png" alt="" width="879" height="542" decoding="async">
-      <span class="oops-logo">OoPs!?</span>
-    </a>
-    <nav class="oops-nav" aria-label="주요 메뉴">
-      <a class="oops-nav__item" href="#" aria-current="page">업로드</a>
-      <a class="oops-nav__item" href="#">검수 리포트</a>
-      <a class="oops-nav__item" href="#">검수 이력</a>
-      <a class="oops-nav__item" href="#">설정</a>
-    </nav>
-  </div>
-</header>
+<div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #111111; -webkit-font-smoothing: antialiased; min-height: 100vh; min-width: 1440px; display: flex; flex-direction: column">
 
-<main id="main">
+  <template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#2A86FA"></rect><rect x="30" y="44" width="40" height="5" rx="2.5" fill="#FFFFFF"></rect><rect x="30" y="55" width="26" height="5" rx="2.5" fill="#FFFFFF" opacity="0.55"></rect><circle cx="50" cy="33" r="4" fill="#FFFFFF"></circle></svg></template>
 
-<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
-<section class="oops-hero" aria-labelledby="hero-title">
-  <div class="oops-hero__panel" aria-hidden="true">
-    <div class="oops-hero__letters"><span class="l-oo">Oo</span><span class="l-ps">Ps</span></div>
-  </div>
+  <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+    <div style="{{ toastStyle }}">
+      <span style="{{ toastIconStyle }}">
+        <svg width="12" height="9" viewBox="0 0 12 9"><path d="M1 4.6 L4.3 8 L11 1.2" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </span>
+      <span style="font-size: 15px; line-height: 24px; font-weight: 500; white-space: nowrap">{{ toastText }}</span>
+      <span style="font-size: 13px; line-height: 24px; color: #757575; white-space: nowrap">{{ toastSub }}</span>
+    </div>
+  </sc-if>
 
-  <div class="oops-hero__inner">
-    <div class="oops-hero__col">
+  <header style="position: sticky; top: 0; z-index: 20; background: #FFFFFF; box-shadow: inset 0 -1px 0 0 #E5E5E5; flex-shrink: 0">
+    <div style="max-width: 1440px; margin: 0 auto; padding: 0 48px; height: 60px; display: flex; align-items: center; box-sizing: border-box">
+      <div onClick="{{ goLanding }}" style="display: flex; align-items: center; color: #2A86FA; cursor: pointer; transition: opacity 120ms linear" style-hover="opacity: 0.75"><svg width="76" height="27" viewBox="2 7 71.5 26.5" role="img" aria-label="OoPs!?"><path d="M16.59 8.78L3.81 8.78L3 11.19L9.78 11.19Q6.06 13.22 4.13 17L4.13 17Q2.38 20.44 2.38 24.72L2.38 24.72Q2.38 27.88 4.44 30.22L4.44 30.22Q6.63 32.66 9.91 32.66L9.91 32.66Q12.44 32.66 14.69 31.28L14.69 31.28Q16.75 30.03 18.34 27.78L18.34 27.78Q19.88 25.66 20.72 23.03L20.72 23.03Q21.56 20.41 21.56 17.91L21.56 17.91Q21.56 15.13 20 13.41L20 13.41Q18.41 11.63 15.66 11.34L15.66 11.34L14.81 13.56Q16.97 13.88 17.88 15L17.88 15Q18.81 16.09 18.81 18.34L18.81 18.34Q18.81 20.53 17.97 22.75L17.97 22.75Q17.19 24.84 15.84 26.59L15.84 26.59Q14.53 28.31 12.97 29.31L12.97 29.31Q11.41 30.34 10 30.34L10 30.34Q7.81 30.34 6.41 28.56L6.41 28.56Q4.97 26.78 4.97 24.06L4.97 24.06Q4.97 19.41 7.75 15.59L7.75 15.59Q10.81 11.38 15.69 10.88L15.69 10.88L16.59 8.78Z M31.94 16.13L32.78 14.44L21.47 14.44L20.34 16.78L24.94 16.78Q22.56 18.09 21.09 20.31L21.09 20.31Q19.41 22.84 19.41 25.91L19.41 25.91Q19.41 28.69 21.38 30.63L21.38 30.63Q23.41 32.66 26.44 32.66L26.44 32.66Q30.34 32.66 33.03 30.16L33.03 30.16Q35.91 27.47 35.91 23L35.91 23Q35.91 20.16 34.38 18.59L34.38 18.59Q32.91 17.06 30.09 16.78L30.09 16.78L29.63 19.16Q31.66 19.47 32.38 20.28L32.38 20.28Q33.06 21.06 33.06 23L33.06 23Q33.06 25.97 31.53 27.97L31.53 27.97Q29.75 30.31 26.47 30.31L26.47 30.31Q24.91 30.31 23.53 29.25L23.53 29.25Q21.94 28.03 21.94 26.25L21.94 26.25Q21.94 22.72 24.03 20.06L24.03 20.06Q26.66 16.75 31.94 16.13L31.94 16.13Z M37.53 8.81L34.88 8.81L34.88 32.16L37.53 32.16L37.53 16.88Q37.53 14.50 39.16 12.66L39.16 12.66Q40.94 10.69 43.72 10.69L43.72 10.69Q45.34 10.69 46.38 12.16L46.38 12.16Q47.38 13.59 47.38 15.88L47.38 15.88Q47.38 18.91 45.75 20.28L45.75 20.28Q43.97 21.84 39.69 21.88L39.69 21.88L39.03 24.28Q44.56 24.47 47.41 22.28L47.41 22.28Q50.22 20.09 50.22 15.72L50.22 15.72Q50.22 11.84 48.19 9.97L48.19 9.97Q46.47 8.34 43.50 8.34L43.50 8.34Q41.78 8.34 40.13 9.25L40.13 9.25Q38.63 10.09 37.53 11.50L37.53 11.50L37.53 8.81Z M59 17.53L59.75 15.16Q59.28 14.78 58.38 14.56L58.38 14.56Q57.50 14.38 56.63 14.38L56.63 14.38Q53.47 14.38 51.34 15.94L51.34 15.94Q49.34 17.44 49.34 19.50L49.34 19.50Q49.34 21.31 50.81 22.50L50.81 22.50Q51.69 23.19 54 24.13L54 24.13Q55.91 24.91 56.63 25.44L56.63 25.44Q57.78 26.28 57.78 27.53L57.78 27.53Q57.78 29.03 56 29.75L56 29.75Q54.53 30.38 51.97 30.38L51.97 30.38Q50.81 30.38 49.56 30L49.56 30Q48.78 29.75 48.03 29.41L48.03 29.41L47.22 31.94Q48.56 32.31 49.81 32.53L49.81 32.53Q51.09 32.75 51.97 32.75L51.97 32.75Q55.84 32.75 58.19 31.22L58.19 31.22Q60.44 29.78 60.44 27.66L60.44 27.66Q60.44 25.47 58.78 24.09L58.78 24.09Q57.81 23.28 55.38 22.28L55.38 22.28Q53.66 21.56 53.03 21.13L53.03 21.13Q52.03 20.41 52.03 19.44L52.03 19.44Q52.03 18 53.28 17.34L53.28 17.34Q54.34 16.81 56.41 16.81L56.41 16.81Q57 16.81 57.75 17.03L57.75 17.03Q58.44 17.22 59 17.53L59 17.53Z M63.28 26.22L60.44 26.22L60.44 32.25L63.28 32.25L63.28 26.22ZM63.28 8.25L60.44 8.25L60.44 25.28L63.28 25.28L63.28 8.25Z M68.34 26.22L65.56 26.22L65.56 32.19L68.34 32.19L68.34 26.22ZM67.56 7.03L65.75 9.09Q67.97 10.69 69.16 12.31L69.16 12.31Q70.31 13.88 70.31 15.22L70.31 15.22Q70.31 16.13 69.75 17L69.75 17Q69.41 17.53 68.44 18.56L68.44 18.56Q67.06 20.06 66.50 21.13L66.50 21.13Q65.56 22.91 65.56 25.25L65.56 25.25L68.31 25.25Q68.31 23.31 69.16 21.78L69.16 21.78Q69.69 20.88 71 19.47L71 19.47Q72.06 18.31 72.47 17.69L72.47 17.69Q73.13 16.63 73.13 15.44L73.13 15.44Q73.13 13.53 71.75 11.38L71.75 11.38Q70.28 9.09 67.56 7.03L67.56 7.03Z" fill="currentColor"></path></svg></div>
+      <nav style="margin-left: auto; display: flex; gap: 28px; font-size: 15px; line-height: 24px; font-weight: 500">
+        <span onClick="{{ goLanding }}" style="{{ navHome }}" style-hover="opacity: 1">홈</span>
+        <span onClick="{{ goUpload }}" style="{{ navUpload }}" style-hover="opacity: 1">업로드</span>
+        <span onClick="{{ goReport }}" style="{{ navReport }}" style-hover="opacity: 1">검수 리포트</span>
+        <span onClick="{{ goHistory }}" style="{{ navHistory }}" style-hover="opacity: 1">검수 이력</span>
+        <span onClick="{{ goSettings }}" style="{{ navSettings }}" style-hover="opacity: 1">설정</span>
+      </nav>
+    </div>
+  </header>
 
-      <div class="oops-eyebrow-row" data-reveal>
-        <span class="oops-eyebrow">업로드 전 검수</span>
-        <span class="oops-timeline" aria-hidden="true">
-          <span class="oops-timeline__rule" data-rule-draw></span>
-          <span class="oops-tick oops-tick--caption" style="left:21.4%"></span>
-          <span class="oops-tick oops-tick--caption" style="left:48.5%"></span>
-          <span class="oops-tick" style="left:84.6%"></span>
-        </span>
+  <sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+  <main style="flex-shrink: 0">
+
+    <section style="position: relative; height: 682px; overflow: hidden">
+      <div style="position: absolute; top: 0; right: 0; width: 326px; height: 682px; background: #4BB1FD; overflow: hidden">
+        <div style="position: absolute; left: -7px; top: 300px; font-size: 128px; line-height: 128px; font-weight: 700; color: #FFFFFF; white-space: nowrap">Oo</div>
+        <div style="position: absolute; left: 179px; top: 375px; font-size: 128px; line-height: 128px; font-weight: 700; color: #FFFFFF; white-space: nowrap">Ps</div>
       </div>
 
-      <h1 class="t-display oops-hero__title" id="hero-title">
-        편집이 끝난 영상 한 편에서,<br class="br-lg">
-        업로드 전에 다시 확인할 구간만 찾습니다.
-      </h1>
+      <div style="position: relative; max-width: 1440px; margin: 0 auto; padding: 120px 96px 0; box-sizing: border-box">
+        <div style="display: flex; align-items: center; gap: 24px; width: 620px">
+          <span style="font-size: 22px; line-height: 20px; font-weight: 500; white-space: nowrap; flex-shrink: 0">업로드 전 검수</span>
+          <div style="position: relative; flex: 1; height: 8px">
+            <div style="position: absolute; left: 0; right: 0; top: 3.5px; height: 1px; background: rgba(0,0,0,0.5)"></div>
+            <div style="position: absolute; left: 18%; top: 0; width: 8px; height: 8px; background: #9E3500"></div>
+            <div style="position: absolute; left: 44%; top: 0; width: 8px; height: 8px; background: #9E3500"></div>
+            <div style="position: absolute; left: 72%; top: 0; width: 8px; height: 8px; background: #111111"></div>
+          </div>
+        </div>
 
-      <p class="t-lead oops-hero__lead">
-        발언과 화면 자막, 화면 속 삽입 이미지를 분석해 검토가 필요한 지점을 타임라인으로 제시합니다.
-        판정하지 않고, 고치지도 않습니다. 최종 판단은 제작자가 합니다.
-      </p>
+        <h1 style="margin: 32px 0 0; font-size: 56px; line-height: 66px; font-weight: 500; width: 972px">편집이 끝난 영상 한 편에서,<br><span style="position: relative; display: inline-block; vertical-align: top; white-space: nowrap"><span>업로드 전에 다시 확인할 구간만</span><span aria-hidden="true" style="position: absolute; left: -6px; top: 0; width: 0; padding: 0 6px; overflow: hidden; white-space: nowrap; line-height: 66px; color: #FFFFFF; background: #29A4FF; border-radius: 10px; animation: oops-wipe 1.6s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both">업로드 전에 다시 확인할 구간만</span></span> 찾습니다.</h1>
+        <p style="margin: 24px 0 0; font-size: 16px; line-height: 28px; font-weight: 300; color: #757575; width: 645px; text-wrap: pretty">발언과 화면 자막, 화면 속 삽입 이미지를 분석해 검토가 필요한 지점을 타임라인으로 제시합니다. 판정하지 않고, 고치지도 않습니다. 최종 판단은 제작자가 합니다.</p>
 
-      <div class="oops-hero__row">
+        <div style="display: flex; align-items: flex-start; gap: 72px; margin-top: 46px">
+          <div class="oops-capture" data-oops-group>
+            <form class="oops-field" novalidate>
+              <label class="oops-sr-only" for="hero-email">이메일 주소</label>
+              <input class="oops-field__input" id="hero-email" name="email" type="email" placeholder="이메일 입력 칸" autocomplete="email">
+              <button class="oops-field__submit" type="submit" aria-label="이메일 등록">
+                <svg class="oops-field__arrow" viewBox="0 0 19 16" fill="none" aria-hidden="true">
+                  <path d="M0 8h17.5M11 1.5 17.5 8 11 14.5" stroke="currentColor" stroke-width="1.5"></path>
+                </svg>
+              </button>
+            </form>
+            <p class="oops-capture__note" data-oops-note></p>
+            <p class="oops-capture__status" data-oops-status role="status" aria-live="polite"></p>
+          </div>
+
+          <div style="width: 504px; opacity: 0.6; flex-shrink: 0">
+            <sc-for list="{{ heroSteps }}" as="s" hint-placeholder-count="5">
+              <div style="display: grid; grid-template-columns: 16px 1fr auto; gap: 14px; align-items: center; height: 42px; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+                <div style="{{ s.dotStyle }}"></div>
+                <div style="{{ s.labelStyle }}">{{ s.label }}</div>
+                <div style="font-size: 11px; line-height: 20px; color: #757575; white-space: nowrap">{{ s.state }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="background: #EDF7FF">
+      <div style="max-width: 1440px; margin: 0 auto; padding: 96px 96px; box-sizing: border-box">
+        <h2 style="margin: 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">혼자 만든 영상은 혼자 볼 수 없습니다</h2>
+        <p style="margin: 24px 0 0; font-size: 16px; line-height: 28px; color: #757575; width: 843px; text-wrap: pretty">말한 사람, 자른 사람, 자막을 단 사람이 같은 사람입니다. 제작자의 눈에는 의도가 계속 보이지만 시청자는 결과물만 봅니다. 주의력의 문제가 아니라 구조적인 사각지대입니다.</p>
+      </div>
+    </section>
+
+    <section style="max-width: 1440px; margin: 0 auto; padding: 96px 96px; box-sizing: border-box">
+      <h2 style="margin: 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">OoPs!?는 세 가지를 봅니다</h2>
+      <div style="display: grid; grid-template-columns: repeat(3, 384px); gap: 48px; margin-top: 56px">
+        <div style="box-shadow: inset 0 1px 0 0 #111111; padding-top: 24px">
+          <div style="font-size: 15px; line-height: 24px; font-weight: 500">발언</div>
+          <p style="margin: 12px 0 0; font-size: 14px; line-height: 28px; color: #757575; text-align: justify">타임스탬프가 붙은 대본을 만들고, 앞뒤 맥락과 함께 검토 후보를 찾습니다. 문장 단위로 잘라 판단하지 않습니다.</p>
+        </div>
+        <div style="box-shadow: inset 0 1px 0 0 #111111; padding-top: 24px">
+          <div style="font-size: 15px; line-height: 24px; font-weight: 500">화면 자막</div>
+          <p style="margin: 12px 0 0; font-size: 14px; line-height: 28px; color: #757575; text-align: justify">화면 변화가 감지된 시점에서 제작자가 넣은 자막을 추출합니다. 같은 자막이 이어지면 하나로 묶습니다.</p>
+        </div>
+        <div style="box-shadow: inset 0 1px 0 0 #111111; padding-top: 24px">
+          <div style="font-size: 15px; line-height: 24px; font-weight: 500">화면 속 상징</div>
+          <p style="margin: 12px 0 0; font-size: 14px; line-height: 28px; color: #757575; text-align: justify">등록된 참조 이미지와 형태가 유사한 프레임을 표시합니다. 의미는 서비스가 만들어내지 않습니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width: 1440px; margin: 0 auto; padding: 0 96px 96px; box-sizing: border-box">
+      <div style="box-shadow: inset 0 1px 0 0 #E5E5E5; padding-top: 56px; display: grid; grid-template-columns: 480px 672px; justify-content: space-between; align-items: start">
+        <div>
+          <div style="display: flex; align-items: center; gap: 17px">
+            <span style="font-size: 16px; line-height: 20px; color: #9E3500; white-space: nowrap">핵심은 이것입니다</span>
+            <div style="flex: 1; height: 1px; background: #9E3500"></div>
+          </div>
+          <h2 style="margin: 20px 0 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">발언과 자막을 나란히 놓고 봅니다</h2>
+          <p style="margin: 20px 0 0; font-size: 16px; line-height: 28px; color: #757575; width: 457px; text-align: justify">1인 편집 환경에서는 자막이 발언보다 세지는 일이 자주 일어납니다. 판정 근거가 화면에 전부 보이기 때문에, 검출이 틀렸더라도 제작자가 바로 판단할 수 있습니다.</p>
+        </div>
+        <div style="background: #F6F4F4; border-radius: 10px; padding: 48px; box-sizing: border-box; height: 256px">
+          <div style="display: grid; grid-template-columns: 88px 1fr; gap: 20px 0; font-size: 15px; line-height: 28px">
+            <div style="color: #757575">실제 발언</div>
+            <div>“조금 아쉬웠습니다.”</div>
+            <div style="color: #757575">화면 자막</div>
+            <div style="font-weight: 500">“역대 최악의 선택”</div>
+          </div>
+          <p style="margin: 28px 0 0; padding: 28px 0 0 8px; box-shadow: inset 0 1px 0 0 #E5E5E5; font-size: 14px; line-height: 28px; color: #757575">실제 발언보다 화면 자막의 비판 강도가 높아, 출연자의 입장이 더 공격적으로 전달될 수 있습니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="background: #EDF7FF">
+      <div style="max-width: 1440px; margin: 0 auto; padding: 96px 96px; box-sizing: border-box; display: grid; grid-template-columns: 480px 672px; justify-content: space-between; align-items: start">
+        <div>
+          <h2 style="margin: 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">OoPs!?가 하지 않는 것</h2>
+          <p style="margin: 20px 0 0; font-size: 15px; line-height: 28px; color: #757575; width: 365px">판정할 수 없는 것은 판정하지 않습니다.<br>확실하지 않은 검출을 늘리는 대신 줄이는 쪽을 택했습니다.</p>
+        </div>
+        <div style="display: flex; flex-direction: column">
+          <div style="display: grid; grid-template-columns: 272px 1fr; height: 68px; align-items: center; box-shadow: inset 0 -1px 0 0 #E5E5E5; font-size: 15px; line-height: 28px">
+            <div style="font-weight: 500">손·포즈·제스처 분석</div>
+            <div style="color: #757575">랜드마크 유사도만으로는 의미를 판정할 수 없습니다.</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 272px 1fr; height: 68px; align-items: center; box-shadow: inset 0 -1px 0 0 #E5E5E5; font-size: 15px; line-height: 28px">
+            <div style="font-weight: 500">댓글 기반 외부 맥락</div>
+            <div style="color: #757575">다른 영상의 댓글은 이 영상의 예측이 아닙니다.</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 272px 1fr; height: 68px; align-items: center; box-shadow: inset 0 -1px 0 0 #E5E5E5; font-size: 15px; line-height: 28px">
+            <div style="font-weight: 500">법률 판정</div>
+            <div style="color: #757575">위법 여부와 정치 성향을 판단하지 않습니다.</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 272px 1fr; height: 68px; align-items: center; box-shadow: inset 0 -1px 0 0 #E5E5E5; font-size: 15px; line-height: 28px">
+            <div style="font-weight: 500">자동 편집·수정</div>
+            <div style="color: #757575">영상을 대신 고치지 않습니다.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width: 1440px; margin: 0 auto; padding: 96px 96px 0; box-sizing: border-box">
+      <h2 style="margin: 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">모든 검출에 근거 수준을 붙입니다</h2>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #E5E5E5; margin-top: 40px">
+        <div style="background: #FFFFFF; padding: 32px 32px 32px 0">
+          <div style="font-size: 16px; line-height: 24px; font-weight: 500">직접 근거</div>
+          <p style="margin: 10px 0 0; font-size: 15px; line-height: 28px; color: #757575">화면과 음성에서 직접 확인할 수 있습니다.</p>
+        </div>
+        <div style="background: #FFFFFF; padding: 32px">
+          <div style="font-size: 16px; line-height: 24px; font-weight: 500">유사 사례</div>
+          <p style="margin: 10px 0 0; font-size: 15px; line-height: 28px; color: #757575">참조 자료와의 유사성에 기반합니다.</p>
+        </div>
+        <div style="background: #FFFFFF; padding: 32px 0 32px 32px">
+          <div style="font-size: 16px; line-height: 24px; font-weight: 500">맥락 추정</div>
+          <p style="margin: 10px 0 0; font-size: 15px; line-height: 28px; color: #757575">해석에 기반하며 확실성이 가장 낮습니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width: 1440px; margin: 0 auto; padding: 96px 96px 120px; box-sizing: border-box">
+      <div style="box-shadow: inset 0 1px 0 0 #111111; padding-top: 56px; display: flex; align-items: flex-end; justify-content: space-between; gap: 48px">
+        <div>
+          <h2 style="margin: 0; font-size: 40px; line-height: 52px; font-weight: 500; white-space: nowrap">한 편으로 확인해 보세요</h2>
+          <p style="margin: 20px 0 0; font-size: 16px; line-height: 28px; color: #757575">원본 영상은 분석 완료 후 24시간 안에 자동 삭제되며, 모델 학습에 사용하지 않습니다.</p>
+        </div>
         <div class="oops-capture" data-oops-group>
           <form class="oops-field" novalidate>
-            <label class="oops-skip" for="hero-email">이메일 주소</label>
-            <input class="oops-field__input" id="hero-email" name="email" type="email"
-                   placeholder="이메일 입력 칸" autocomplete="email">
+            <label class="oops-sr-only" for="cta-email">이메일 주소</label>
+            <input class="oops-field__input" id="cta-email" name="email" type="email" placeholder="이메일 입력 칸" autocomplete="email">
             <button class="oops-field__submit" type="submit" aria-label="이메일 등록">
               <svg class="oops-field__arrow" viewBox="0 0 19 16" fill="none" aria-hidden="true">
-                <path d="M0 8h17.5M11 1.5 17.5 8 11 14.5" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M0 8h17.5M11 1.5 17.5 8 11 14.5" stroke="currentColor" stroke-width="1.5"></path>
               </svg>
             </button>
           </form>
           <p class="oops-capture__note" data-oops-note></p>
           <p class="oops-capture__status" data-oops-status role="status" aria-live="polite"></p>
         </div>
-
-        <div class="oops-mock" aria-hidden="true">
-          <div class="oops-mock__row oops-mock__row--done"><span class="oops-mock__dot"></span><span class="oops-mock__name">음성을 텍스트로 변환</span><span class="oops-mock__state">완료</span></div>
-          <div class="oops-mock__row oops-mock__row--done"><span class="oops-mock__dot"></span><span class="oops-mock__name">발언 리스크 후보 탐지</span><span class="oops-mock__state">완료</span></div>
-          <div class="oops-mock__row oops-mock__row--live"><span class="oops-mock__dot oops-pulse"></span><span class="oops-mock__name">화면 변화 감지 및 대표 프레임 추출</span><span class="oops-mock__state">진행 중</span></div>
-          <div class="oops-mock__row"><span class="oops-mock__dot"></span><span class="oops-mock__name">화면 자막 OCR</span><span class="oops-mock__state">대기</span></div>
-          <div class="oops-mock__row"><span class="oops-mock__dot"></span><span class="oops-mock__name">발언과 자막 대조</span><span class="oops-mock__state">대기</span></div>
-        </div>
       </div>
+    </section>
+  </main>
+  </sc-if>
 
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════ S2 · 구조적 사각지대 ══════════════════ -->
-<section class="oops-band oops-band--tint" aria-labelledby="s-why">
-  <div class="oops-wrap">
-    <h2 class="t-h2" id="s-why" data-reveal>혼자 만든 영상은 혼자 볼 수 없습니다</h2>
-    <p class="t-body oops-why__body" data-reveal style="--d:60ms">
-      말한 사람, 자른 사람, 자막을 단 사람이 같은 사람입니다. 제작자의 눈에는 의도가 계속 보이지만
-      시청자는 결과물만 봅니다. 주의력의 문제가 아니라 구조적인 사각지대입니다.
-    </p>
-  </div>
-</section>
-
-<!-- ══════════════════ S3 · 세 가지를 봅니다 ══════════════════ -->
-<section class="oops-band" aria-labelledby="s-three">
-  <div class="oops-wrap">
-    <h2 class="t-h2" id="s-three" data-reveal>OoPs?!는 세 가지를 봅니다</h2>
-    <div class="oops-cards">
-      <article class="oops-card" data-reveal style="--d:60ms" tabindex="0">
-        <h3 class="oops-card__title">발언</h3>
-        <p class="t-body-xs justify oops-card__body">타임스탬프가 붙은 대본을 만들고, 앞뒤 맥락과 함께 검토 후보를 찾습니다. 문장 단위로 잘라 판단하지 않습니다.</p>
-      </article>
-      <article class="oops-card" data-reveal style="--d:120ms" tabindex="0">
-        <h3 class="oops-card__title">화면 자막</h3>
-        <p class="t-body-xs justify oops-card__body">화면 변화가 감지된 시점에서 제작자가 넣은 자막을 추출합니다. 같은 자막이 이어지면 하나로 묶습니다.</p>
-      </article>
-      <article class="oops-card" data-reveal style="--d:180ms" tabindex="0">
-        <h3 class="oops-card__title">화면 속 상징</h3>
-        <p class="t-body-xs justify oops-card__body">등록된 참조 이미지와 형태가 유사한 프레임을 표시합니다. 의미는 서비스가 만들어내지 않습니다. v1에서는 비활성입니다.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════ S4 · 핵심은 이것입니다 ══════════════════ -->
-<section class="oops-band" style="padding-top:0" aria-labelledby="s-core">
-  <div class="oops-wrap">
-    <div class="oops-split">
+  <sc-if value="{{ isUpload }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width: 1440px; margin: 0 auto; padding: 80px 96px 120px; width: 100%; box-sizing: border-box; flex-shrink: 0">
+    <div style="display: grid; grid-template-columns: 801.328px 350.672px; gap: 96px; align-items: start">
       <div>
-        <div class="oops-rulelabel" data-reveal>
-          <span class="oops-rulelabel__text">핵심은 이것입니다</span>
-          <span class="oops-rulelabel__rule" data-rule-draw aria-hidden="true"></span>
+        <h1 style="margin: 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">영상 업로드</h1>
+        <p style="margin: 16px 0 48px; font-size: 15px; line-height: 28px; color: #757575">편집이 끝난 완성본 한 편을 올려 주세요. mp4 또는 mov, 최대 10분 · 2GB.</p>
+
+        <div onClick="{{ pickFile }}" onMouseEnter="{{ zoneEnter }}" onMouseLeave="{{ zoneLeave }}" onDragOver="{{ zoneDragOver }}" onDragLeave="{{ zoneDragLeave }}" onDrop="{{ zoneDrop }}" style="{{ dropStyle }}">
+          <div style="position: absolute; inset: 0; pointer-events: none; background-color: #F7FBFF; background-image: linear-gradient(#FFFFFF 1px, transparent 1px), linear-gradient(90deg, #FFFFFF 1px, transparent 1px); background-size: 40px 40px; -webkit-mask-image: radial-gradient(ellipse at center, #000000 20%, transparent 72%); mask-image: radial-gradient(ellipse at center, #000000 20%, transparent 72%)"></div>
+
+          <input type="file" accept="video/mp4,video/quicktime" ref="{{ inputRef }}" onChange="{{ inputChange }}" style="display: none">
+
+          <div style="position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center">
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">파일을 이 영역으로 끌어다 놓으세요</div>
+            <div style="margin-top: 8px; font-size: 12px; line-height: 20px; color: #757575">또는 눌러서 파일 선택 · 업로드 중 중단하고 다시 이어서 올릴 수 있습니다</div>
+
+            <div style="position: relative; width: 100%; max-width: 560px; margin-top: 32px; display: flex; flex-direction: column; align-items: center">
+              <sc-if value="{{ noFile }}" hint-placeholder-val="{{ true }}">
+                <div style="position: relative; width: 128px; height: 128px">
+                  <div style="{{ ghostStyle }}"></div>
+                  <div style="{{ tileStyle }}">
+                    <svg width="20" height="20" viewBox="0 0 14 14">
+                      <path d="M 6.5 10.577 L 6.5 1.927 L 4.17 4.257 L 3.462 3.539 L 7 0 L 10.539 3.539 L 9.831 4.258 L 7.5 1.927 L 7.5 10.577 L 6.5 10.577 Z M 0 14 L 0 9.962 L 1 9.962 L 1 13 L 13 13 L 13 9.962 L 14 9.962 L 14 14 L 0 14 Z" fill="#29A4FF"></path>
+                    </svg>
+                    <sc-if value="{{ dragActive }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top: 8px; font-size: 12px; line-height: 18px; font-weight: 500; color: #29A4FF">놓으세요</div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ hasFile }}" hint-placeholder-val="{{ false }}">
+                <sc-for list="{{ pickedFiles }}" as="pf" hint-placeholder-count="1">
+                  <div style="width: 100%; border-radius: 10px; background: #FFFFFF; box-shadow: 0 1px 3px rgba(17,17,17,0.08); padding: 16px 18px; text-align: left">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px">
+                      <div style="font-size: 15px; line-height: 24px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ pf.name }}</div>
+                      <div style="font-size: 12px; line-height: 20px; color: #757575; white-space: nowrap; flex-shrink: 0; padding: 2px 10px; border-radius: 100px; background: #EDF7FF">{{ pf.size }}</div>
+                    </div>
+                    <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 12px; line-height: 20px; color: #757575">
+                      <span style="padding: 1px 8px; border-radius: 4px; background: #F2F2F2; white-space: nowrap">{{ pf.type }}</span>
+                      <span style="white-space: nowrap">수정 {{ pf.modified }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+                <div style="margin-top: 12px; font-size: 12px; line-height: 20px; color: #757575">다시 선택하려면 이 영역을 누르세요</div>
+              </sc-if>
+            </div>
+          </div>
         </div>
-        <h2 class="t-h2 oops-split__title" id="s-core" data-reveal style="--d:60ms">발언과 자막을 나란히 놓고 봅니다</h2>
-        <p class="t-body justify oops-split__text" data-reveal style="--d:120ms">
-          1인 편집 환경에서는 자막이 발언보다 세지는 일이 자주 일어납니다. 판정 근거가 화면에 전부
-          보이기 때문에, 검출이 틀렸더라도 제작자가 바로 판단할 수 있습니다.
-        </p>
+
+        <div style="display: grid; grid-template-columns: 376.664px 376.664px; justify-content: space-between; margin-top: 56px">
+          <label style="display: block">
+            <span style="display: block; font-size: 12px; line-height: 20px; font-weight: 500; color: #757575; margin-bottom: 10px">영상 제목 (선택)</span>
+            <input type="text" placeholder="과거에 실수로 3번이나 음주 운전 했다는 임성근 셰프" style="width: 100%; box-sizing: border-box; border: none; outline: none; background: transparent; box-shadow: inset 0 -1px 0 0 #E5E5E5; padding: 8px 0; font-family: inherit; font-size: 15px; line-height: 24px; color: #111111; transition: box-shadow 120ms linear" style-focus="box-shadow: inset 0 -1px 0 0 #29A4FF">
+          </label>
+          <label style="display: block">
+            <span style="display: block; font-size: 12px; line-height: 20px; font-weight: 500; color: #757575; margin-bottom: 10px">채널 URL (선택)</span>
+            <input type="text" placeholder="youtube.com/@channel" style="width: 100%; box-sizing: border-box; border: none; outline: none; background: transparent; box-shadow: inset 0 -1px 0 0 #E5E5E5; padding: 8px 0; font-family: inherit; font-size: 15px; line-height: 24px; color: #111111; transition: box-shadow 120ms linear" style-focus="box-shadow: inset 0 -1px 0 0 #29A4FF">
+          </label>
+        </div>
+
+        <div style="margin-top: 64px; display: flex; align-items: center; justify-content: space-between; gap: 48px">
+          <p style="margin: 0; font-size: 12px; line-height: 20px; color: #757575">업로드가 끝나면 분석이 곧바로 시작됩니다. 10분 영상 기준 5분 이내에 리포트가 나옵니다.</p>
+          <div onClick="{{ startAnalysis }}" style="{{ startStyle }}" style-hover="box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #29A4FF">분석 시작</div>
+        </div>
       </div>
 
-      <figure class="oops-compare" data-reveal style="--d:180ms" tabindex="0">
-        <div class="oops-compare__grid">
-          <span class="oops-compare__key">실제 발언</span>
-          <span class="oops-compare__val">“조금 아쉬웠습니다.”</span>
-          <span class="oops-compare__key oops-compare__key--caption">화면 자막</span>
-          <span class="oops-compare__val oops-compare__val--loud">“역대 최악의 선택”</span>
+      <aside style="box-shadow: inset 1px 0 0 0 #E5E5E5; padding-left: 40px">
+        <h2 style="margin: 0 0 8px; font-size: 15px; line-height: 24px; font-weight: 500">데이터 보관 정책</h2>
+        <p style="margin: 0 0 28px; font-size: 12px; line-height: 20px; color: #757575">편집 완료본은 채널의 가장 민감한 자산입니다.</p>
+        <div style="display: flex; flex-direction: column">
+          <div style="padding: 16px 0; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">원본 영상</div>
+            <div style="margin-top: 4px; font-size: 12px; line-height: 20px; color: #757575">분석 완료 후 24시간 내 자동 삭제</div>
+          </div>
+          <div style="padding: 16px 0; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">모델 학습</div>
+            <div style="margin-top: 4px; font-size: 12px; line-height: 20px; color: #757575">사용하지 않습니다</div>
+          </div>
+          <div style="padding: 16px 0; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">리포트</div>
+            <div style="margin-top: 4px; font-size: 12px; line-height: 20px; color: #757575">텍스트 결과와 대표 프레임만 보관, 언제든 삭제 가능</div>
+          </div>
+          <div style="padding: 16px 0">
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">전송</div>
+            <div style="margin-top: 4px; font-size: 12px; line-height: 20px; color: #757575">전 구간 암호화</div>
+          </div>
         </div>
-        <figcaption class="oops-compare__note">
-          실제 발언보다 화면 자막의 비판 강도가 높아, 출연자의 입장이 더 공격적으로 전달될 수 있습니다.
-        </figcaption>
-      </figure>
+      </aside>
     </div>
-  </div>
-</section>
+  </main>
+  </sc-if>
 
-<!-- ══════════════════ S5 · 하지 않는 것 ══════════════════ -->
-<section class="oops-band oops-band--tint" aria-labelledby="s-not">
-  <div class="oops-wrap">
-    <div class="oops-split oops-split--flat">
+  <sc-if value="{{ isAnalyzing }}" hint-placeholder-val="{{ false }}">
+  <main style="position: relative; overflow: hidden; flex-shrink: 0">
+    <div style="position: absolute; top: 0; right: 56px; width: 326px; height: 100%; background: #4BB1FD; overflow: hidden">
+      <div style="position: absolute; left: -7px; top: 380px; font-size: 128px; line-height: 128px; font-weight: 700; color: #FFFFFF; white-space: nowrap">Oo</div>
+      <div style="position: absolute; left: 179px; top: 472px; font-size: 128px; line-height: 128px; font-weight: 700; color: #FFFFFF; white-space: nowrap">Ps</div>
+    </div>
+    <div style="position: relative; max-width: 1440px; margin: 0 auto; padding: 70px 96px 120px; width: 100%; box-sizing: border-box">
+      <div style="width: 720px">
+        <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">{{ fileName }}</div>
+        <h1 style="margin: 12px 0 0; font-size: 40px; line-height: 52px; font-weight: 500">분석 중입니다</h1>
+        <p style="margin: 16px 0 0; font-size: 15px; line-height: 28px; color: #757575">남은 시간 약 {{ etaLabel }}. 음성 분석과 화면 분석은 따로 진행됩니다.</p>
+
+        <div style="margin-top: 56px; height: 2px; background: #E5E5E5; overflow: hidden">
+          <div style="{{ barStyle }}"></div>
+        </div>
+
+        <div style="margin-top: 48px; display: flex; flex-direction: column">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+            <div style="display: grid; grid-template-columns: 20px 1fr auto; gap: 20px; align-items: center; height: 60px; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+              <div style="{{ s.dotStyle }}"></div>
+              <div style="{{ s.labelStyle }}">{{ s.label }}</div>
+              <div style="font-size: 12px; line-height: 20px; color: #757575; white-space: nowrap">{{ s.state }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width: 1440px; margin: 0 auto; padding: 56px 96px 96px; width: 100%; box-sizing: border-box; flex-shrink: 0">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 48px; flex-shrink: 0">
       <div>
-        <h2 class="t-h2" id="s-not" data-reveal>OoPs?!가 하지 않는 것</h2>
-        <p class="t-body-s justify" data-reveal style="margin-top:20px;--d:60ms">
-          판정할 수 없는 것은 판정하지 않습니다.<br class="br-lg">
-          확실하지 않은 검출을 늘리는 대신 줄이는 쪽을 택했습니다.
-        </p>
+        <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">검수 리포트 · 2026-08-11</div>
+        <h1 style="margin: 10px 0 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px; white-space: nowrap">{{ fileName }}</h1>
       </div>
-      <ul class="oops-nots">
-        <li class="oops-not" data-reveal style="--d:60ms">
-          <span class="oops-not__inner">
-            <span class="oops-not__label">손·포즈·제스처 분석</span>
-            <span class="oops-not__text">랜드마크 유사도만으로는 의미를 판정할 수 없습니다.</span>
-          </span>
-        </li>
-        <li class="oops-not" data-reveal style="--d:120ms">
-          <span class="oops-not__inner">
-            <span class="oops-not__label">댓글 기반 외부 맥락</span>
-            <span class="oops-not__text">다른 영상의 댓글은 이 영상의 예측이 아닙니다.</span>
-          </span>
-        </li>
-        <li class="oops-not" data-reveal style="--d:180ms">
-          <span class="oops-not__inner">
-            <span class="oops-not__label">법률 판정</span>
-            <span class="oops-not__text">위법 여부와 정치 성향을 판단하지 않습니다.</span>
-          </span>
-        </li>
-        <li class="oops-not" data-reveal style="--d:240ms">
-          <span class="oops-not__inner">
-            <span class="oops-not__label">자동 편집·수정</span>
-            <span class="oops-not__text">영상을 대신 고치지 않습니다.</span>
-          </span>
-        </li>
-      </ul>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════ S6 · 근거 수준 ══════════════════ -->
-<section class="oops-band" aria-labelledby="s-evidence">
-  <div class="oops-wrap">
-    <h2 class="t-h2" id="s-evidence" data-reveal>모든 검출에 근거 수준을 붙입니다</h2>
-    <div class="oops-grid">
-      <article class="oops-grid__cell" data-reveal style="--d:60ms" tabindex="0">
-        <h3 class="oops-grid__title">직접 근거</h3>
-        <p class="oops-grid__text">화면과 음성에서 직접 확인할 수 있습니다.</p>
-      </article>
-      <article class="oops-grid__cell" data-reveal style="--d:120ms" tabindex="0">
-        <h3 class="oops-grid__title">유사 사례</h3>
-        <p class="oops-grid__text">참조 자료와의 유사성에 기반합니다.</p>
-      </article>
-      <article class="oops-grid__cell" data-reveal style="--d:180ms" tabindex="0">
-        <h3 class="oops-grid__title">맥락 추정</h3>
-        <p class="oops-grid__text">해석에 기반하며 확실성이 가장 낮습니다.</p>
-      </article>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════════ S7 · CTA ══════════════════ -->
-<section class="oops-band" style="padding-top:0;padding-bottom:120px" aria-labelledby="s-cta">
-  <div class="oops-wrap">
-    <div class="oops-cta">
-      <div class="oops-cta__copy">
-        <h2 class="t-h1" id="s-cta" data-reveal>한 편으로 확인해 보세요</h2>
-        <p class="t-body oops-cta__text" data-reveal style="--d:60ms">
-          원본 영상은 분석 완료 후 24시간 안에 자동 삭제되며, 모델 학습에 사용하지 않습니다.
-        </p>
-      </div>
-      <div class="oops-capture" data-oops-group data-reveal style="--d:120ms">
-        <form class="oops-field" novalidate>
-          <label class="oops-skip" for="cta-email">이메일 주소</label>
-          <input class="oops-field__input" id="cta-email" name="email" type="email"
-                 placeholder="이메일 입력 칸" autocomplete="email">
-          <button class="oops-field__submit" type="submit" aria-label="이메일 등록">
-            <svg class="oops-field__arrow" viewBox="0 0 19 16" fill="none" aria-hidden="true">
-              <path d="M0 8h17.5M11 1.5 17.5 8 11 14.5" stroke="currentColor" stroke-width="1.5"/>
-            </svg>
-          </button>
-        </form>
-        <p class="oops-capture__note" data-oops-note></p>
-        <p class="oops-capture__status" data-oops-status role="status" aria-live="polite"></p>
+      <div style="display: flex; gap: 48px; font-size: 15px; line-height: 24px; flex-shrink: 0">
+        <div style="flex-shrink: 0">
+          <div style="color: #757575; font-size: 12px; line-height: 20px; white-space: nowrap">검토 지점</div>
+          <div style="margin-top: 4px; font-weight: 500; white-space: nowrap">{{ total }}건</div>
+        </div>
+        <div style="flex-shrink: 0">
+          <div style="color: #757575; font-size: 12px; line-height: 20px; white-space: nowrap">결정 완료</div>
+          <div style="margin-top: 4px; font-weight: 500; white-space: nowrap">{{ decided }}건</div>
+        </div>
+        <div style="flex-shrink: 0">
+          <div style="color: #757575; font-size: 12px; line-height: 20px; white-space: nowrap">영상 길이</div>
+          <div style="margin-top: 4px; font-weight: 500; white-space: nowrap">09:41</div>
+        </div>
       </div>
     </div>
-  </div>
-</section>
 
-</main>
-
-<!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
-<footer class="oops-footer">
-  <div class="oops-footer__inner">
-    <div>
-      <h2 class="oops-fcol__title">제품</h2>
-      <ul class="oops-fcol__list">
-        <li><a class="oops-flink" href="#">업로드</a></li>
-        <li><a class="oops-flink" href="#">검수 리포트</a></li>
-        <li><a class="oops-flink" href="#">검수 이력</a></li>
-      </ul>
+    <div style="margin-top: 60px; position: relative">
+      <div style="position: relative; height: 56px; border-radius: 10px; background: #DEF1FF">
+        <sc-for list="{{ findings }}" as="f" hint-placeholder-count="5">
+          <div onClick="{{ f.select }}" style="{{ f.markerStyle }}" style-hover="opacity: 0.6" title="{{ f.time }}">
+            <div style="{{ f.markerBarStyle }}"></div>
+            <div style="{{ f.markerTimeStyle }}">{{ f.time }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; line-height: 20px; color: #757575">
+        <span>00:00</span><span>09:41</span>
+      </div>
     </div>
-    <div>
-      <h2 class="oops-fcol__title">정책</h2>
-      <ul class="oops-fcol__list">
-        <li><a class="oops-flink" href="#">데이터 보관</a></li>
-        <li><a class="oops-flink" href="#">AI 출력 원칙</a></li>
-        <li><a class="oops-flink" href="#">참조 데이터베이스 기준</a></li>
-      </ul>
-    </div>
-    <div class="oops-fend">
-      <span class="oops-logo">OoPs!?</span>
-      <p class="oops-fend__note">AI는 의도와 정치 성향, 법률 위반을 판정하지 않습니다. 다시 확인할 구간만 제시합니다.</p>
-      <p class="oops-fend__legal">원본 영상 24시간 내 자동 삭제 · 모델 학습 미사용 · 전 구간 암호화
-© 2026 OoPs!?</p>
-    </div>
-  </div>
-</footer>
 
-<script>
-(function () {
-  var els = [].slice.call(document.querySelectorAll('[data-reveal],[data-rule-draw]'));
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var show = function (el) { el.classList.add('is-in'); };
+    <div style="display: flex; gap: 24px; font-size: 12px; line-height: 20px; color: #757575; align-items: center; margin-top: 8px">
+      <span style="display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0"><span style="width: 8px; height: 8px; background: #111111; flex-shrink: 0"></span>발언</span>
+      <span style="display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0"><span style="width: 8px; height: 8px; background: #D07F23; flex-shrink: 0"></span>자막</span>
+      <span style="display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0"><span style="width: 8px; height: 8px; background: #CCCCCC; flex-shrink: 0"></span>화면 (v1 비활성)</span>
+    </div>
 
-  /* 우아한 열화 ① 미지원 / reduced-motion → 즉시 노출 */
-  if (!els.length) return;
-  if (!('IntersectionObserver' in window) || reduce) { els.forEach(show); }
-  else {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        show(e.target);
-        io.unobserve(e.target);          /* 1회만 — 되감아도 재생하지 않음 */
-      });
-    }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
-    els.forEach(function (el) { io.observe(el); });
-    /* 우아한 열화 ② 3초 안전망 */
-    setTimeout(function () { els.forEach(function (el) { if (!el.classList.contains('is-in')) show(el); }); }, 3000);
+    <div style="margin-top: 40px; display: grid; grid-template-columns: 376px 1fr; gap: 56px; align-items: start">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <sc-for list="{{ findings }}" as="f" hint-placeholder-count="5">
+          <div onClick="{{ f.select }}" style="{{ f.rowStyle }}" style-hover="background: #F1F9FF">
+            <div style="display: flex; align-items: baseline; gap: 12px">
+              <span style="font-size: 15px; line-height: 24px; font-weight: 500; font-variant-numeric: tabular-nums; flex-shrink: 0">{{ f.time }}</span>
+              <span style="{{ f.kindStyle }}">{{ f.kind }}</span>
+              <span style="margin-left: auto; font-size: 12px; line-height: 20px; color: #757575; white-space: nowrap; flex-shrink: 0">{{ f.decisionLabel }}</span>
+            </div>
+            <div style="margin-top: 6px; font-size: 15px; line-height: 24px; color: #757575">{{ f.title }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <article>
+        <div style="display: flex; align-items: baseline; gap: 16px; flex-shrink: 0">
+          <span style="font-size: 40px; line-height: 48px; font-weight: 500; font-variant-numeric: tabular-nums">{{ sel.time }}</span>
+          <span style="{{ selKindStyle }}">{{ sel.kind }}</span>
+          <span style="font-size: 12px; line-height: 20px; color: #757575; white-space: nowrap">근거 수준 · {{ sel.level }}</span>
+        </div>
+        <h2 style="margin: 20px 0 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px; max-width: 720px; text-wrap: pretty; flex-shrink: 0">{{ sel.title }}</h2>
+
+        <div style="margin-top: 36px; display: flex; flex-direction: column">
+          <div style="display: grid; grid-template-columns: 240px 1fr; padding: 24px 0; box-shadow: inset 0 1px 0 0 #E5E5E5">
+            <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">1 · 왜 검토 대상인가</div>
+            <div style="font-size: 15px; line-height: 28px; text-wrap: pretty">{{ sel.reason }}</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 240px 1fr; padding: 24px 0; box-shadow: inset 0 1px 0 0 #E5E5E5">
+            <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">2 · 실제 발언</div>
+            <div style="font-size: 15px; line-height: 28px">{{ sel.speech }}</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 240px 1fr; padding: 24px 0; box-shadow: inset 0 1px 0 0 #E5E5E5">
+            <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">3 · 실제 화면 / 자막</div>
+            <div>
+              <div style="font-size: 15px; line-height: 28px; font-weight: 500">{{ sel.caption }}</div>
+              <div style="margin-top: 16px; width: 260px; height: 146px; border-radius: 10px; background: #F2F2F2; display: flex; align-items: center; justify-content: center; font-size: 12px; line-height: 20px; color: #757575">대표 프레임 {{ sel.time }}</div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 240px 1fr; padding: 24px 0; box-shadow: inset 0 1px 0 0 #E5E5E5">
+            <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">4 · 연결된 참조</div>
+            <div style="font-size: 15px; line-height: 28px; color: #757575">{{ sel.reference }}</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 240px 1fr; padding: 24px 0; box-shadow: inset 0 1px 0 0 #E5E5E5">
+            <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">5 · 다른 해석</div>
+            <div style="font-size: 15px; line-height: 28px; text-wrap: pretty">{{ sel.alt }}</div>
+          </div>
+          <div style="display: grid; grid-template-columns: 240px 1fr; padding: 24px 0; box-shadow: inset 0 1px 0 0 #E5E5E5">
+            <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">6 · 근거 수준</div>
+            <div style="font-size: 15px; line-height: 28px">{{ sel.level }} — {{ sel.levelNote }}</div>
+          </div>
+        </div>
+
+        <div style="position: sticky; bottom: 0; margin-top: 8px; padding: 24px 0 20px; background: #FFFFFF; box-shadow: inset 0 1px 0 0 #111111">
+          <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">최종 판단은 제작자가 합니다</div>
+          <div style="display: flex; gap: 16px; margin-top: 14px; font-size: 15px; line-height: 24px; font-weight: 500">
+            <span onClick="{{ markFixed }}" style="{{ dFixed }}" style-hover="box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #29A4FF">수정함</span>
+            <span onClick="{{ markOk }}" style="{{ dOk }}" style-hover="box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #29A4FF">확인함</span>
+            <span onClick="{{ markHold }}" style="{{ dHold }}" style-hover="box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #29A4FF">보류</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width: 1440px; margin: 0 auto; padding: 80px 96px 120px; width: 100%; box-sizing: border-box; flex-shrink: 0">
+    <h1 style="margin: 0; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">검수 이력</h1>
+    <p style="margin: 16px 0 0; font-size: 15px; line-height: 28px; color: #757575">자막 강도 관련 검출이 최근 네 편에서 반복됩니다.</p>
+
+    <div style="margin-top: 40px">
+      <div style="display: grid; grid-template-columns: 1fr 140px 120px 120px 140px; gap: 24px; padding: 12px 0; box-shadow: inset 0 -1px 0 0 #111111; font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">
+        <div>파일명</div><div>검수일</div><div>검출</div><div>수정함</div><div>상태</div>
+      </div>
+      <sc-for list="{{ history }}" as="h" hint-placeholder-count="6">
+        <div onClick="{{ h.open }}" style="display: grid; grid-template-columns: 1fr 140px 120px 120px 140px; gap: 24px; align-items: center; height: 68px; box-shadow: inset 0 -1px 0 0 #E5E5E5; font-size: 15px; line-height: 24px; cursor: pointer; transition: background-color 120ms linear" style-hover="background: #F1F9FF">
+          <div style="font-weight: 500">{{ h.name }}</div>
+          <div style="color: #757575; font-variant-numeric: tabular-nums">{{ h.date }}</div>
+          <div style="color: #757575">{{ h.found }}</div>
+          <div style="color: #757575">{{ h.fixed }}</div>
+          <div style="{{ h.stateStyle }}">{{ h.state }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+  <main style="max-width: 1440px; margin: 0 auto; padding: 80px 96px 120px; width: 100%; box-sizing: border-box; flex-shrink: 0">
+    <h1 style="margin: 0 0 56px; font-size: 27px; line-height: 36px; font-weight: 500; letter-spacing: 0.196px">설정 · 결제</h1>
+
+    <div style="display: grid; grid-template-columns: 240px 800px; gap: 64px; padding-bottom: 56px; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+      <h2 style="margin: 0; font-size: 15px; line-height: 24px; font-weight: 500">요금제</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #E5E5E5">
+        <div onClick="{{ pickSingle }}" style="{{ planSingle }}" style-hover="background: #F1F9FF">
+          <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">크리에이터 요금제</div>
+          <div style="margin-top: 12px; font-size: 27px; line-height: 36px; font-weight: 500">0원</div>
+          <p style="margin: 12px 0 0; font-size: 15px; line-height: 28px; color: #757575">FREE</p>
+        </div>
+        <div onClick="{{ pickSolo }}" style="{{ planSolo }}" style-hover="background: #F1F9FF">
+          <div style="font-size: 12px; line-height: 20px; font-weight: 500; color: #757575">스튜디오 요금제</div>
+          <div style="margin-top: 12px; font-size: 27px; line-height: 36px; font-weight: 500">0원</div>
+          <p style="margin: 12px 0 0; font-size: 15px; line-height: 28px; color: #757575">FREE</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 240px 800px; gap: 64px; padding: 56px 0; box-shadow: inset 0 -1px 0 0 #E5E5E5">
+      <h2 style="margin: 0; font-size: 15px; line-height: 24px; font-weight: 500">데이터</h2>
+      <div style="display: flex; flex-direction: column">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; padding-bottom: 20px">
+          <div>
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">보관 중인 원본 영상</div>
+            <div style="margin-top: 4px; font-size: 12px; line-height: 20px; color: #757575">1건 · 14시간 후 자동 삭제 예정</div>
+          </div>
+          <span onClick="{{ noop }}" style="font-size: 15px; line-height: 24px; font-weight: 500; cursor: pointer; white-space: nowrap; box-shadow: inset 0 -1px 0 0 #E5E5E5" style-hover="box-shadow: inset 0 -1px 0 0 #29A4FF">지금 삭제</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 32px; padding-top: 20px; box-shadow: inset 0 1px 0 0 #E5E5E5">
+          <div>
+            <div style="font-size: 15px; line-height: 24px; font-weight: 500">리포트 기록</div>
+            <div style="margin-top: 4px; font-size: 12px; line-height: 20px; color: #757575">6건 · 텍스트 결과와 대표 프레임</div>
+          </div>
+          <span onClick="{{ noop }}" style="font-size: 15px; line-height: 24px; font-weight: 500; cursor: pointer; white-space: nowrap; box-shadow: inset 0 -1px 0 0 #E5E5E5" style-hover="box-shadow: inset 0 -1px 0 0 #29A4FF">전체 삭제</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 240px 800px; gap: 64px; padding-top: 56px">
+      <h2 style="margin: 0; font-size: 15px; line-height: 24px; font-weight: 500">분석 범위</h2>
+      <p style="margin: 0; font-size: 15px; line-height: 28px; color: #757575">발언 · 화면 자막 · 발언과 자막 비교가 켜져 있습니다. 화면 속 상징 유사도 탐지는 참조 데이터베이스 수록 기준이 확정되기 전까지 비활성입니다.</p>
+    </div>
+  </main>
+  </sc-if>
+
+  <footer style="background: #4BB1FD; color: #FFFFFF; margin-top: auto; height: 224px; flex-shrink: 0; box-sizing: border-box">
+    <div style="max-width: 1440px; margin: 0 auto; padding: 48px 96px 0; box-sizing: border-box; display: grid; grid-template-columns: 245.25px 245.25px 1fr; gap: 0; height: 100%">
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 16px; line-height: 20px; font-weight: 500">
+        <div style="color: #FFFFFF; opacity: 0.75; font-size: 12px; line-height: 20px">제품</div>
+        <span onClick="{{ goUpload }}" style="cursor: pointer; color: #FFFFFF; transition: opacity 120ms linear" style-hover="opacity: 0.7">업로드</span>
+        <span onClick="{{ goReport }}" style="cursor: pointer; color: #FFFFFF; transition: opacity 120ms linear" style-hover="opacity: 0.7">검수 리포트</span>
+        <span onClick="{{ goHistory }}" style="cursor: pointer; color: #FFFFFF; transition: opacity 120ms linear" style-hover="opacity: 0.7">검수 이력</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 16px; line-height: 20px; font-weight: 500">
+        <div style="color: #FFFFFF; opacity: 0.75; font-size: 12px; line-height: 20px">정책</div>
+        <span style="color: #FFFFFF">데이터 보관</span>
+        <span style="color: #FFFFFF">AI 출력 원칙</span>
+        <span style="color: #FFFFFF">참조 데이터베이스 기준</span>
+      </div>
+      <div style="justify-self: end; width: 410.516px; text-align: right; display: flex; flex-direction: column">
+        <div style="display: flex; justify-content: flex-end; color: #FFFFFF"><svg width="76" height="27" viewBox="2 7 71.5 26.5" role="img" aria-label="OoPs!?"><path d="M16.59 8.78L3.81 8.78L3 11.19L9.78 11.19Q6.06 13.22 4.13 17L4.13 17Q2.38 20.44 2.38 24.72L2.38 24.72Q2.38 27.88 4.44 30.22L4.44 30.22Q6.63 32.66 9.91 32.66L9.91 32.66Q12.44 32.66 14.69 31.28L14.69 31.28Q16.75 30.03 18.34 27.78L18.34 27.78Q19.88 25.66 20.72 23.03L20.72 23.03Q21.56 20.41 21.56 17.91L21.56 17.91Q21.56 15.13 20 13.41L20 13.41Q18.41 11.63 15.66 11.34L15.66 11.34L14.81 13.56Q16.97 13.88 17.88 15L17.88 15Q18.81 16.09 18.81 18.34L18.81 18.34Q18.81 20.53 17.97 22.75L17.97 22.75Q17.19 24.84 15.84 26.59L15.84 26.59Q14.53 28.31 12.97 29.31L12.97 29.31Q11.41 30.34 10 30.34L10 30.34Q7.81 30.34 6.41 28.56L6.41 28.56Q4.97 26.78 4.97 24.06L4.97 24.06Q4.97 19.41 7.75 15.59L7.75 15.59Q10.81 11.38 15.69 10.88L15.69 10.88L16.59 8.78Z M31.94 16.13L32.78 14.44L21.47 14.44L20.34 16.78L24.94 16.78Q22.56 18.09 21.09 20.31L21.09 20.31Q19.41 22.84 19.41 25.91L19.41 25.91Q19.41 28.69 21.38 30.63L21.38 30.63Q23.41 32.66 26.44 32.66L26.44 32.66Q30.34 32.66 33.03 30.16L33.03 30.16Q35.91 27.47 35.91 23L35.91 23Q35.91 20.16 34.38 18.59L34.38 18.59Q32.91 17.06 30.09 16.78L30.09 16.78L29.63 19.16Q31.66 19.47 32.38 20.28L32.38 20.28Q33.06 21.06 33.06 23L33.06 23Q33.06 25.97 31.53 27.97L31.53 27.97Q29.75 30.31 26.47 30.31L26.47 30.31Q24.91 30.31 23.53 29.25L23.53 29.25Q21.94 28.03 21.94 26.25L21.94 26.25Q21.94 22.72 24.03 20.06L24.03 20.06Q26.66 16.75 31.94 16.13L31.94 16.13Z M37.53 8.81L34.88 8.81L34.88 32.16L37.53 32.16L37.53 16.88Q37.53 14.50 39.16 12.66L39.16 12.66Q40.94 10.69 43.72 10.69L43.72 10.69Q45.34 10.69 46.38 12.16L46.38 12.16Q47.38 13.59 47.38 15.88L47.38 15.88Q47.38 18.91 45.75 20.28L45.75 20.28Q43.97 21.84 39.69 21.88L39.69 21.88L39.03 24.28Q44.56 24.47 47.41 22.28L47.41 22.28Q50.22 20.09 50.22 15.72L50.22 15.72Q50.22 11.84 48.19 9.97L48.19 9.97Q46.47 8.34 43.50 8.34L43.50 8.34Q41.78 8.34 40.13 9.25L40.13 9.25Q38.63 10.09 37.53 11.50L37.53 11.50L37.53 8.81Z M59 17.53L59.75 15.16Q59.28 14.78 58.38 14.56L58.38 14.56Q57.50 14.38 56.63 14.38L56.63 14.38Q53.47 14.38 51.34 15.94L51.34 15.94Q49.34 17.44 49.34 19.50L49.34 19.50Q49.34 21.31 50.81 22.50L50.81 22.50Q51.69 23.19 54 24.13L54 24.13Q55.91 24.91 56.63 25.44L56.63 25.44Q57.78 26.28 57.78 27.53L57.78 27.53Q57.78 29.03 56 29.75L56 29.75Q54.53 30.38 51.97 30.38L51.97 30.38Q50.81 30.38 49.56 30L49.56 30Q48.78 29.75 48.03 29.41L48.03 29.41L47.22 31.94Q48.56 32.31 49.81 32.53L49.81 32.53Q51.09 32.75 51.97 32.75L51.97 32.75Q55.84 32.75 58.19 31.22L58.19 31.22Q60.44 29.78 60.44 27.66L60.44 27.66Q60.44 25.47 58.78 24.09L58.78 24.09Q57.81 23.28 55.38 22.28L55.38 22.28Q53.66 21.56 53.03 21.13L53.03 21.13Q52.03 20.41 52.03 19.44L52.03 19.44Q52.03 18 53.28 17.34L53.28 17.34Q54.34 16.81 56.41 16.81L56.41 16.81Q57 16.81 57.75 17.03L57.75 17.03Q58.44 17.22 59 17.53L59 17.53Z M63.28 26.22L60.44 26.22L60.44 32.25L63.28 32.25L63.28 26.22ZM63.28 8.25L60.44 8.25L60.44 25.28L63.28 25.28L63.28 8.25Z M68.34 26.22L65.56 26.22L65.56 32.19L68.34 32.19L68.34 26.22ZM67.56 7.03L65.75 9.09Q67.97 10.69 69.16 12.31L69.16 12.31Q70.31 13.88 70.31 15.22L70.31 15.22Q70.31 16.13 69.75 17L69.75 17Q69.41 17.53 68.44 18.56L68.44 18.56Q67.06 20.06 66.50 21.13L66.50 21.13Q65.56 22.91 65.56 25.25L65.56 25.25L68.31 25.25Q68.31 23.31 69.16 21.78L69.16 21.78Q69.69 20.88 71 19.47L71 19.47Q72.06 18.31 72.47 17.69L72.47 17.69Q73.13 16.63 73.13 15.44L73.13 15.44Q73.13 13.53 71.75 11.38L71.75 11.38Q70.28 9.09 67.56 7.03L67.56 7.03Z" fill="currentColor"></path></svg></div>
+        <p style="margin: 16px 0 0; font-size: 12px; line-height: 20px; color: #FFFFFF">AI는 의도와 정치 성향, 법률 위반을 판정하지 않습니다. 다시 확인할 구간만 제시합니다.</p>
+        <p style="margin: 21px 0 0; font-size: 10px; line-height: 15px; font-weight: 200; color: #FFFFFF">원본 영상 24시간 내 자동 삭제 · 모델 학습 미사용 · 전 구간 암호화<br>© 2026 OoPs!?</p>
+      </div>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const BLUE = "#29A4FF";
+const KIND_COLOR = { "발언": "#111111", "자막": "#D07F23", "화면": "#CCCCCC" };
+
+const FINDINGS = [
+  { id: "f1", time: "02:14", at: 134, kind: "자막", level: "직접 근거",
+    title: "화면 자막이 실제 발언보다 비판 강도가 높습니다",
+    reason: "같은 시각의 발언과 자막의 강도 차이가 큽니다. 출연자의 입장이 실제보다 공격적으로 전달될 수 있습니다.",
+    speech: "“조금 아쉬웠습니다.”",
+    caption: "“역대 최악의 선택”",
+    reference: "해당 없음 (화면 유형에만 표시됩니다)",
+    alt: "직전 문맥에서 다른 대상을 두고 한 평가를 요약한 자막으로 읽힐 수도 있습니다.",
+    levelNote: "발언과 자막이 화면과 음성에서 모두 확인됩니다." },
+  { id: "f2", time: "04:17", at: 257, kind: "발언", level: "맥락 추정",
+    title: "특정 집단 전체에 대한 일반화로 받아들여질 가능성이 있습니다",
+    reason: "특정 지역 거주자를 대상으로 한 서술이 집단 전체의 속성으로 읽힐 수 있습니다.",
+    speech: "“이 지역에는 젊은 사람들이 살 이유가 없는 것 같아요.”",
+    caption: "자막 없음",
+    reference: "해당 없음",
+    alt: "앞서 언급한 특정 사례 한 곳을 지칭한 것으로 읽힐 수도 있습니다.",
+    levelNote: "해석에 기반하며 확실성이 가장 낮습니다." },
+  { id: "f3", time: "05:48", at: 348, kind: "발언", level: "직접 근거",
+    title: "확인이 필요한 내용이 사실처럼 단정되어 있습니다",
+    reason: "출처를 밝히지 않은 수치가 확정된 사실처럼 서술됩니다.",
+    speech: "“작년에만 절반 이상이 빠져나갔습니다.”",
+    caption: "“절반 이상 이탈”",
+    reference: "해당 없음",
+    alt: "특정 기관 발표를 인용한 것이라면 출처를 함께 밝히는 편이 안전합니다.",
+    levelNote: "발언과 자막에서 직접 확인됩니다." },
+  { id: "f4", time: "06:31", at: 391, kind: "자막", level: "직접 근거",
+    title: "발언은 개별 사례인데 자막이 집단으로 확대합니다",
+    reason: "발언은 한 사람의 사례를 말하지만 자막은 직군 전체를 지칭합니다.",
+    speech: "“그 담당자 한 분이 그렇게 처리했더라고요.”",
+    caption: "“이 업계가 일하는 방식”",
+    reference: "해당 없음",
+    alt: "업계 관행을 설명하는 별도 구간의 자막이 이어진 것으로 볼 수도 있습니다.",
+    levelNote: "발언과 자막의 지칭 범위 차이가 직접 확인됩니다." },
+  { id: "f5", time: "07:52", at: 472, kind: "발언", level: "맥락 추정",
+    title: "실명 인물에 대한 언급이 주제와 직접 연결되지 않습니다",
+    reason: "해설의 논지와 무관한 지점에서 실명이 등장합니다.",
+    speech: "“○○○ 씨도 예전에 비슷한 얘기 했었죠.”",
+    caption: "자막 없음",
+    reference: "해당 없음",
+    alt: "논지를 보강하는 인용으로 읽힐 수도 있습니다.",
+    levelNote: "해석에 기반합니다." }
+];
+
+const STEPS = [
+  "음성을 텍스트로 변환",
+  "발언 리스크 후보 탐지",
+  "화면 변화 감지 및 대표 프레임 추출",
+  "화면 자막 OCR",
+  "발언과 자막 대조"
+];
+
+const HISTORY = [
+  { name: "8월 2주차 시사 해설.mp4", date: "2026-08-04", found: "6건", fixed: "3건", state: "완료" },
+  { name: "경제 브리핑 32화.mp4", date: "2026-07-29", found: "4건", fixed: "2건", state: "완료" },
+  { name: "인터뷰 재편집본.mov", date: "2026-07-22", found: "9건", fixed: "5건", state: "완료" },
+  { name: "7월 셋째주 리뷰.mp4", date: "2026-07-18", found: "2건", fixed: "0건", state: "완료" },
+  { name: "특집 대담 1부.mp4", date: "2026-07-11", found: "7건", fixed: "4건", state: "완료" },
+  { name: "예고편 컷.mp4", date: "2026-07-09", found: "—", fixed: "—", state: "실패" }
+];
+
+const FILE_NAME = "과거에 실수로 3번이나 음주 운전 했다는 임성근 셰프.mp4";
+const DURATION = 581;
+const START_BASE = "display: inline-flex; align-items: center; justify-content: center; width: 124px; height: 60px; border-radius: 15px; font-size: 15px; line-height: 24px; font-weight: 700; white-space: nowrap; flex-shrink: 0; cursor: pointer; background: #29A4FF; color: #FFFFFF; transition: box-shadow 200ms ease-out, background-color 120ms linear;";
+const NAV_BASE = "cursor: pointer; padding: 4px 0; white-space: nowrap; transition: opacity 120ms linear";
+const KIND_CHIP = "display: inline-flex; white-space: nowrap; flex-shrink: 0; font-size: 12px; line-height: 18px; font-weight: 500; padding: 2px 10px; box-shadow: inset 0 0 0 1px #E5E5E5";
+
+class Component extends DCLogic {
+  state = { screen: "landing", file: false, step: 0, selId: "f1", decisions: {}, plan: "single", hover: false, drag: false, files: [], emailA: "", emailB: "", toast: null, heroStep: 2 };
+  inputRef = React.createRef();
+
+  describe(f) {
+    return {
+      name: f.name,
+      size: (f.size / (1024 * 1024)).toFixed(2) + " MB",
+      type: f.type || "video",
+      modified: new Date(f.lastModified).toLocaleDateString("ko-KR")
+    };
   }
 
-  /* 앰비언트 루프는 화면 안 · 탭 활성일 때만 */
-  var dots = document.querySelectorAll('.oops-pulse');
-  if (dots.length && 'IntersectionObserver' in window) {
-    var io2 = new IntersectionObserver(function (es) {
-      es.forEach(function (e) { e.target.dataset.paused = e.isIntersecting ? 'false' : 'true'; });
-    }, { threshold: 0 });
-    [].forEach.call(dots, function (d) { io2.observe(d); });
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden) [].forEach.call(dots, function (d) { d.dataset.paused = 'true'; });
+  takeFiles = (list) => {
+    const files = Array.from(list || []).slice(0, 1).map(f => this.describe(f));
+    if (files.length) this.setState({ files, file: true, drag: false });
+    else this.setState({ drag: false });
+  };
+
+  componentDidMount() {
+    this.heroTimer = setInterval(() => {
+      if (this.state.screen === "landing") {
+        this.setState(s => ({ heroStep: (s.heroStep + 1) % 6 }));
+      }
+    }, 1500);
+  }
+
+  componentWillUnmount() { clearInterval(this.timer); clearTimeout(this.toastTimer); clearInterval(this.heroTimer); }
+
+  notify = (key) => {
+    const value = (this.state[key] || "").trim();
+    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+    clearTimeout(this.toastTimer);
+    this.setState({ toast: null }, () => {
+      this.setState({
+        toast: ok
+          ? { text: "설문 메일을 보냈습니다", sub: value, ok: true }
+          : { text: "이메일 주소를 확인해 주세요", sub: "예: name@channel.com", ok: false },
+        [key]: ok ? "" : value
+      });
+      this.toastTimer = setTimeout(() => this.setState({ toast: null }), 3400);
+    });
+  };
+
+  go = (screen) => {
+    clearInterval(this.timer);
+    this.setState({ screen });
+    window.scrollTo(0, 0);
+  };
+
+  startAnalysis = () => {
+    clearInterval(this.timer);
+    this.setState({ screen: "analyzing", step: 0, file: true });
+    window.scrollTo(0, 0);
+    this.timer = setInterval(() => {
+      const next = this.state.step + 1;
+      if (next > STEPS.length) {
+        clearInterval(this.timer);
+        this.setState({ screen: "report" });
+        window.scrollTo(0, 0);
+      } else {
+        this.setState({ step: next });
+      }
+    }, 1100);
+  };
+
+  setDecision = (v) => this.setState(s => ({ decisions: Object.assign({}, s.decisions, { [s.selId]: v }) }));
+
+  navStyle(name) {
+    const on = this.state.screen === name;
+    return NAV_BASE + "; opacity: " + (on ? "1" : "0.5") + "; box-shadow: " + (on ? "inset 0 -2px 0 0 #111111" : "none");
+  }
+
+  decStyle(v) {
+    const on = this.state.decisions[this.state.selId] === v;
+    return "display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; flex-shrink: 0; box-sizing: border-box; height: 40px; padding: 0 20px; border-radius: 30px; cursor: pointer; transition: box-shadow 200ms ease-out, background-color 120ms linear, border-color 120ms linear; "
+      + (on ? "background: " + BLUE + "; color: #FFFFFF; border: 1px solid " + BLUE + ";" : "background: #FFFFFF; border: 1px solid #CCCCCC;");
+  }
+
+  stepRows(activeIndex, compact) {
+    return STEPS.map((label, i) => {
+      const done = i < activeIndex;
+      const active = i === activeIndex;
+      return {
+        label,
+        state: done ? "완료" : active ? "진행 중" : "대기",
+        labelStyle: "font-size: " + (compact ? "12px" : "15px") + "; line-height: " + (compact ? "20px" : "24px")
+          + "; font-weight: " + (active ? "500" : "400")
+          + "; color: " + (done || active ? "#111111" : "#757575"),
+        dotStyle: "width: 8px; height: 8px; border-radius: 100px; justify-self: center; background: "
+          + (done ? "#111111" : active ? BLUE + "; animation: oops-pulse 1.5s ease-out infinite" : "#E5E5E5")
+      };
     });
   }
 
-  /* 이메일 제출은 collect.js가 담당합니다 (Google 스프레드시트로 전송).
-     여기서는 아무것도 가로채지 않습니다 — 두 곳에서 submit을 처리하면
-     한쪽이 다른 쪽을 조용히 막게 됩니다. */
-})();
+  renderVals() {
+    const s = this.state;
+    const sel = FINDINGS.find(f => f.id === s.selId) || FINDINGS[0];
+    const stepVal = s.step;
+    const decLabels = { fixed: "수정함", ok: "확인함", hold: "보류" };
+
+    const findings = FINDINGS.map(f => {
+      const active = f.id === s.selId;
+      const color = KIND_COLOR[f.kind];
+      return Object.assign({}, f, {
+        select: () => this.setState({ selId: f.id }),
+        decisionLabel: decLabels[s.decisions[f.id]] || "미결정",
+        kindStyle: KIND_CHIP + "; color: " + color,
+        rowStyle: "cursor: pointer; border-radius: 10px; padding: 20px 16px; transition: background-color 120ms linear; "
+          + (active ? "background: #F1F9FF;" : "background: #FFFFFF;")
+          + " box-shadow: inset 0 -1px 0 0 #E5E5E5;",
+        markerStyle: {
+          position: "absolute", top: 0, bottom: 0, left: (f.at / DURATION * 100) + "%",
+          width: "2px", cursor: "pointer", transform: "translateX(-1px)", transition: "opacity 120ms linear"
+        },
+        markerBarStyle: {
+          position: "absolute", inset: 0, background: color,
+          outline: active ? "4px solid rgba(41,164,255,0.22)" : "none"
+        },
+        markerTimeStyle: {
+          position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)",
+          fontSize: "12px", lineHeight: "20px", fontVariantNumeric: "tabular-nums",
+          color: active ? BLUE : "#757575", fontWeight: 500, whiteSpace: "nowrap"
+        }
+      });
+    });
+
+    const pct = Math.min(100, Math.round(stepVal / STEPS.length * 100));
+    const picked = s.files.length > 0;
+    const lifted = s.hover || s.drag;
+
+    return {
+      isLanding: s.screen === "landing", isUpload: s.screen === "upload",
+      isAnalyzing: s.screen === "analyzing", isReport: s.screen === "report",
+      isHistory: s.screen === "history", isSettings: s.screen === "settings",
+      goLanding: () => this.go("landing"), goUpload: () => this.go("upload"),
+      goReport: () => this.go("report"), goHistory: () => this.go("history"),
+      goSettings: () => this.go("settings"), noop: () => {},
+      navHome: this.navStyle("landing"), navUpload: this.navStyle("upload"), navReport: this.navStyle("report"),
+      navHistory: this.navStyle("history"), navSettings: this.navStyle("settings"),
+      fileName: s.files.length ? s.files[0].name : FILE_NAME,
+
+      emailA: s.emailA, emailB: s.emailB,
+      setEmailA: (e) => this.setState({ emailA: e.target.value }),
+      setEmailB: (e) => this.setState({ emailB: e.target.value }),
+      submitA: () => this.notify("emailA"),
+      submitB: () => this.notify("emailB"),
+      keyA: (e) => { if (e.key === "Enter") this.notify("emailA"); },
+      keyB: (e) => { if (e.key === "Enter") this.notify("emailB"); },
+      toastOn: !!s.toast,
+      toastText: s.toast ? s.toast.text : "",
+      toastSub: s.toast ? s.toast.sub : "",
+      toastStyle: {
+        position: "fixed", top: "20px", left: "50%", zIndex: 100,
+        display: "flex", alignItems: "center", gap: "12px",
+        padding: "14px 24px 14px 18px", borderRadius: "100px",
+        background: "#FFFFFF", boxShadow: "0 12px 40px rgba(17,17,17,0.16), inset 0 0 0 1px "
+          + (s.toast && s.toast.ok ? "#B8E1FF" : "#E5E5E5"),
+        animation: "oops-toast 420ms cubic-bezier(0.2, 0.9, 0.3, 1.4) both"
+      },
+      toastIconStyle: {
+        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        width: "26px", height: "26px", borderRadius: "100px",
+        background: s.toast && s.toast.ok ? BLUE : "#CCCCCC"
+      },
+      hasFile: picked, noFile: !picked,
+      inputRef: this.inputRef,
+      inputChange: (e) => this.takeFiles(e.target.files),
+      pickFile: () => { if (this.inputRef.current) this.inputRef.current.click(); },
+      zoneEnter: () => this.setState({ hover: true }),
+      zoneLeave: () => this.setState({ hover: false, drag: false }),
+      zoneDragOver: (e) => { e.preventDefault(); if (!s.drag) this.setState({ drag: true }); },
+      zoneDragLeave: (e) => { e.preventDefault(); this.setState({ drag: false }); },
+      zoneDrop: (e) => { e.preventDefault(); this.takeFiles(e.dataTransfer && e.dataTransfer.files); },
+      dragActive: s.drag,
+      pickedFiles: s.files,
+      ghostStyle: {
+        position: "absolute", inset: 0, borderRadius: "10px",
+        border: "1px dashed " + BLUE, background: "transparent",
+        opacity: lifted ? 1 : 0, transition: "opacity 200ms linear"
+      },
+      tileStyle: {
+        position: "absolute", inset: 0, borderRadius: "10px", background: "#FFFFFF",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        boxShadow: lifted ? "0 18px 50px rgba(17,17,17,0.16)" : "0 10px 40px rgba(17,17,17,0.08)",
+        transform: lifted ? "translate(20px, -20px)" : "translate(0, 0)",
+        opacity: lifted ? 0.94 : 1,
+        transition: "transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 200ms linear, opacity 200ms linear"
+      },
+      startAnalysis: this.startAnalysis,
+      dropStyle: "position: relative; overflow: hidden; cursor: pointer; padding: 46px 40px; text-align: center; box-sizing: border-box; border-radius: 10px; display: flex; flex-direction: column; align-items: center; background: #EDF7FF; transition: box-shadow 120ms linear; box-shadow: inset 0 0 0 "
+        + (s.drag ? "2px " + BLUE : picked ? "2px " + BLUE : "1px #B8E1FF") + ";",
+      startStyle: START_BASE,
+
+      steps: this.stepRows(stepVal, false),
+      heroSteps: this.stepRows(s.heroStep, true),
+      etaLabel: (STEPS.length - stepVal) + "0초",
+      barStyle: { width: pct + "%", height: "2px", background: BLUE, transition: "width 400ms linear" },
+
+      findings, sel, total: FINDINGS.length,
+      decided: Object.keys(s.decisions).length,
+      selKindStyle: KIND_CHIP + "; color: " + KIND_COLOR[sel.kind],
+      markFixed: () => this.setDecision("fixed"),
+      markOk: () => this.setDecision("ok"),
+      markHold: () => this.setDecision("hold"),
+      dFixed: this.decStyle("fixed"), dOk: this.decStyle("ok"), dHold: this.decStyle("hold"),
+
+      history: HISTORY.map(h => Object.assign({}, h, {
+        open: () => this.go("report"),
+        stateStyle: "font-size: 15px; line-height: 24px; color: " + (h.state === "실패" ? "#757575" : "#111111")
+      })),
+
+      planSingle: "cursor: pointer; background: #FFFFFF; padding: 32px; box-sizing: border-box; height: 172px; box-shadow: inset 0 0 0 "
+        + (s.plan === "single" ? "1px " + BLUE : "0 transparent"),
+      planSolo: "cursor: pointer; background: #FFFFFF; padding: 32px; box-sizing: border-box; height: 172px; box-shadow: inset 0 0 0 "
+        + (s.plan === "solo" ? "1px " + BLUE : "0 transparent"),
+      pickSingle: () => this.setState({ plan: "single" }),
+      pickSolo: () => this.setState({ plan: "solo" })
+    };
+  }
+}
 </script>
-
-<!-- 이메일 수집 + Vercel 방문자 분석 -->
+<!-- 기존 Google Sheets 이메일 수집 + Vercel 방문자 분석 -->
 <script src="./collect.js" defer></script>
-
 </body>
 </html>
